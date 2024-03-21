@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd"
+        logicalFilePath="homework-2">
+
+    <changeSet id="create_table_category" author="Alexei Grigorev">
+        <createTable schemaName="onlinestore" tableName="category">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create_table_product" author="Alexei Grigorev">
+        <createTable schemaName="onlinestore" tableName="product">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="brand" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category_id" type="bigint">
+            </column>
+            <column name="price" type="number(9,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_available " type="boolean">
+                <constraints nullable="false"/>
+            </column>
+            <column name="received" type="date">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableSchemaName="onlinestore"
+                                 baseTableName="product"
+                                 baseColumnNames="category_id"
+                                 constraintName="fk_product_category"
+                                 referencedTableName="category"
+                                 referencedColumnNames="id"
+                                 referencedTableSchemaName="onlinestore"/>
+    </changeSet>
+
+    <changeSet id="create_table_order_status" author="Alexei Grigorev">
+        <createTable schemaName="onlinestore" tableName="order_status">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create_table_order" author="Alexei Grigorev">
+        <createTable schemaName="onlinestore" tableName="order">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created" type="date">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="bigint">
+            </column>
+            <column name="order_status_id" type="bigint">
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableSchemaName="onlinestore"
+                                 baseTableName="order"
+                                 baseColumnNames="id"
+                                 constraintName="fk_order_id"
+                                 referencedTableName="product"
+                                 referencedColumnNames="id"
+                                 referencedTableSchemaName="onlinestore"/>
+        <addForeignKeyConstraint baseTableSchemaName="onlinestore"
+                                 baseTableName="order"
+                                 baseColumnNames="order_status_id"
+                                 constraintName="fk_order_status_id"
+                                 referencedTableName="order_status"
+                                 referencedColumnNames="id"
+                                 referencedTableSchemaName="onlinestore"/>
+    </changeSet>
+
+    <changeSet id="create_table_role" author="Alexei Grigorev">
+        <createTable schemaName="onlinestore" tableName="role">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create_user" author="Alexei Grigorev">
+        <createTable schemaName="onlinestore" tableName="user">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableSchemaName="onlinestore"
+                                 baseTableName="user"
+                                 baseColumnNames="role_id"
+                                 constraintName="fk_user_role_role_id"
+                                 referencedTableName="role"
+                                 referencedColumnNames="id"
+                                 referencedTableSchemaName="onlinestore"/>
+    </changeSet>
+
+    <changeSet id="create_table_waiting_list" author="Alexei Grigorev">
+        <createTable schemaName="onlinestore" tableName="waiting_list">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+            </column>
+            <column name="product_id" type="bigint">
+            </column>
+            <column name="counter" type="bigint">
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableSchemaName="onlinestore"
+                                 baseTableName="waiting_list"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_waiting_list_user_id"
+                                 referencedTableName="user"
+                                 referencedColumnNames="id"
+                                 referencedTableSchemaName="onlinestore"/>
+        <addForeignKeyConstraint baseTableSchemaName="onlinestore"
+                                 baseTableName="waiting_list"
+                                 baseColumnNames="product_id"
+                                 constraintName="fk_waiting_list_product_id"
+                                 referencedTableName="product"
+                                 referencedColumnNames="id"
+                                 referencedTableSchemaName="onlinestore"/>
+    </changeSet>
+
+    <changeSet id="create_user_index_id" author="Alexei Grigorev">
+        <createIndex schemaName="onlinestore" indexName="idx_user_id" tableName="user">
+            <column name="role_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="create_role_index_id" author="Alexei Grigorev">
+        <createIndex schemaName="onlinestore" indexName="idx_role_id" tableName="role">
+            <column name="id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
