@@ -16,28 +16,28 @@ import org.springframework.context.annotation.ComponentScan;
 
 import java.util.List;
 
-@ComponentScan(basePackages = "com.onlinestore")
+@ComponentScan
 public class Application {
 
 	public static void main(String[] args) throws JsonProcessingException {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Application.class);
 		ProductController productController = context.getBean(ProductController.class);
 
-		CategoryDto categoryDtoFirst = context.getBean(CategoryDto.class);
+		CategoryDto categoryDtoFirst = new CategoryDto();
 		categoryDtoFirst.setId(1);
 		categoryDtoFirst.setName(Category.TOY.getValue());
 
 		ObjectMapper objectMapper = new ObjectMapper();
 		String s = objectMapper.writeValueAsString(categoryDtoFirst);
 		System.out.println(s);
-		CategoryDto categoryDto = objectMapper.readValue(s, CategoryDto.class);
+		CategoryDto categoryDto = new CategoryDto();
 		System.out.println(categoryDto);
 
-		CategoryDto categoryDtoSecond = context.getBean(CategoryDto.class);
+		CategoryDto categoryDtoSecond = new CategoryDto();
 		categoryDtoSecond.setId(2);
 		categoryDtoSecond.setName(Category.CLOTHES.getValue());
 
-		ProductDto productDtoFirst = context.getBean(ProductDto.class);
+		ProductDto productDtoFirst = new ProductDto();
 		productDtoFirst.setId(1L);
 		productDtoFirst.setName("Toy name");
 		productDtoFirst.setBrand("Toy brand");
@@ -49,7 +49,7 @@ public class Application {
 		productDtoFirst.setReceived("10-11-2023");
 		productController.add(productDtoFirst);
 
-		ProductDto productDtoSecond = context.getBean(ProductDto.class);
+		ProductDto productDtoSecond = new ProductDto();
 		productDtoSecond.setId(2);
 		productDtoSecond.setName("Clothes name");
 		productDtoSecond.setBrand("Clothes brand");
@@ -68,13 +68,13 @@ public class Application {
 
 		OrderController orderController = context.getBean(OrderController.class);
 
-		OrderDto orderDtoFirst = context.getBean(OrderDto.class);
+		OrderDto orderDtoFirst = new OrderDto();
 		orderDtoFirst.setId(1);
 		orderDtoFirst.setProducts(List.of(productDtoFirst, productDtoSecond));
 		orderDtoFirst.setOrderStatus(OrderStatus.IN_PROGRESS.getValue());
 		orderController.add(orderDtoFirst);
 
-		OrderDto orderDtoSecond = context.getBean(OrderDto.class);
+		OrderDto orderDtoSecond = new OrderDto();
 		orderDtoSecond.setId(2);
 		orderDtoSecond.setProducts(List.of(productDtoFirst));
 		orderDtoSecond.setOrderStatus(OrderStatus.READY.getValue());
@@ -85,7 +85,7 @@ public class Application {
 		orderController.updateById(1, orderDtoSecond);
 
 		UserController userController = context.getBean(UserController.class);
-		RegistrationUserDto registrationUserDtoFirst = context.getBean(RegistrationUserDto.class);
+		RegistrationUserDto registrationUserDtoFirst = new RegistrationUserDto();
 		registrationUserDtoFirst.setId(1);
 		registrationUserDtoFirst.setName("Name");
 		registrationUserDtoFirst.setEmail("name@Gmail.com");
@@ -93,7 +93,7 @@ public class Application {
 		registrationUserDtoFirst.setConfirmPassword("password");
 		userController.createNewUser(registrationUserDtoFirst);
 
-		RegistrationUserDto registrationUserDtoSecond = context.getBean(RegistrationUserDto.class);
+		RegistrationUserDto registrationUserDtoSecond = new RegistrationUserDto();
 		registrationUserDtoSecond.setId(2);
 		registrationUserDtoSecond.setName("SecondName");
 		registrationUserDtoSecond.setEmail("secondName@gmail.com");
