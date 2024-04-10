@@ -1,5 +1,6 @@
 package com.onlinestore.main.service.impl;
 
+import com.onlinestore.main.annotation.Transaction;
 import com.onlinestore.main.domain.dto.ProductDto;
 import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.mapper.IProductMapper;
@@ -17,6 +18,7 @@ public class ProductService implements IProductService {
 	private IProductRepository productRepository;
 	private IProductMapper productMapper;
 
+	@Transaction
 	@Override
 	public void add(ProductDto productDto) {
 		Product product = productMapper.mapToProduct(productDto);
@@ -31,15 +33,17 @@ public class ProductService implements IProductService {
 						String.format("Product with id %d was not found", id)));
 	}
 
+	@Transaction
 	@Override
 	public void updateById(long id, ProductDto updateProductDto) {
-		productRepository.findById(id)
+		Product product = productRepository.findById(id)
 				.orElseThrow(() -> new NoSuchElementException(
 						String.format("Product with id %d was not found", id)));
 
-		productRepository.updateById(id, productMapper.mapToProduct(updateProductDto));
+		productRepository.updateById(product.getId(), productMapper.mapToProduct(updateProductDto));
 	}
 
+	@Transaction
 	@Override
 	public void deleteByID(long id) {
 		ProductDto productDto = findById(id);
