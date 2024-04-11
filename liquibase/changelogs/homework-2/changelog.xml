@@ -39,7 +39,7 @@
             <column name="created" type="date">
                 <constraints nullable="false"/>
             </column>
-            <column name="is_available " type="boolean">
+            <column name="is_available" type="boolean">
                 <constraints nullable="false"/>
             </column>
             <column name="received" type="date">
@@ -163,13 +163,79 @@
 
     <changeSet id="create_user_index_id" author="Alexei Grigorev">
         <createIndex schemaName="onlinestore" indexName="idx_user_id" tableName="user">
-            <column name="role_id"/>
+            <column name="role_id" type="bigint"/>
         </createIndex>
     </changeSet>
+
 
     <changeSet id="create_role_index_id" author="Alexei Grigorev">
         <createIndex schemaName="onlinestore" indexName="idx_role_id" tableName="role">
             <column name="id"/>
         </createIndex>
+    </changeSet>
+
+    <changeSet id="create_table_order_product" author="Alexei Grigorev">
+        <createTable schemaName="onlinestore" tableName="order_product">
+            <column name="order_id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableSchemaName="onlinestore"
+                                 baseTableName="order_product"
+                                 baseColumnNames="order_id"
+                                 constraintName="fk_order_product_order_id"
+                                 referencedTableName="order"
+                                 referencedColumnNames="id"
+                                 referencedTableSchemaName="onlinestore"/>
+        <addForeignKeyConstraint baseTableSchemaName="onlinestore"
+                                 baseTableName="order_product"
+                                 baseColumnNames="product_id"
+                                 constraintName="fk_order_product_product_id"
+                                 referencedTableName="product"
+                                 referencedColumnNames="id"
+                                 referencedTableSchemaName="onlinestore"/>
+    </changeSet>
+
+    <changeSet id="drop_order_product_id" author="Alexei Grigorev">
+        <dropColumn tableName="order" columnName="product_id"/>
+    </changeSet>
+
+    <changeSet id="delete_fk_order_id_product_id" author="Alexei Grigorev">
+        <dropForeignKeyConstraint baseTableSchemaName="onlinestore"
+                                  baseTableName="order"
+                                  constraintName="fk_order_id"/>
+    </changeSet>
+
+    <changeSet id="insert_enum_category" author="Alexei Grigorev">
+        <insert schemaName="onlinestore" tableName="category">
+            <column name="id">1</column>
+            <column name="name">TOY</column>
+        </insert>
+        <insert schemaName="onlinestore" tableName="category">
+            <column name="id">2</column>
+            <column name="name">CLOTHES</column>
+        </insert>
+        <insert schemaName="onlinestore" tableName="category">
+            <column name="id">3</column>
+            <column name="name">ELECTRONICS</column>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert_enum_order_status" author="Alexei Grigorev">
+        <insert schemaName="onlinestore" tableName="order_status">
+            <column name="id">1</column>
+            <column name="name">READY</column>
+        </insert>
+        <insert schemaName="onlinestore" tableName="order_status">
+            <column name="id">2</column>
+            <column name="name">NOT_READY</column>
+        </insert>
+        <insert schemaName="onlinestore" tableName="order_status">
+            <column name="id">3</column>
+            <column name="name">IN_PROGRESS</column>
+        </insert>
     </changeSet>
 </databaseChangeLog>

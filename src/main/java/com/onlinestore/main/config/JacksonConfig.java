@@ -1,4 +1,4 @@
-package com.onlinestore.main.controller.config;
+package com.onlinestore.main.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
