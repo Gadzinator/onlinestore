@@ -1,24 +1,26 @@
 package com.onlinestore.main.service.impl;
 
-import com.onlinestore.main.annotation.Transaction;
 import com.onlinestore.main.domain.dto.ProductDto;
 import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.mapper.IProductMapper;
-import com.onlinestore.main.repository.IProductRepository;
+import com.onlinestore.main.repository.impl.ProductRepositoryDao;
 import com.onlinestore.main.service.IProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
 @AllArgsConstructor
 public class ProductService implements IProductService {
 
-	private IProductRepository productRepository;
+	private ProductRepositoryDao productRepository;
 	private IProductMapper productMapper;
 
-	@Transaction
+	@Transactional
 	@Override
 	public void add(ProductDto productDto) {
 		Product product = productMapper.mapToProduct(productDto);
@@ -33,22 +35,41 @@ public class ProductService implements IProductService {
 						String.format("Product with id %d was not found", id)));
 	}
 
-	@Transaction
 	@Override
-	public void updateById(long id, ProductDto updateProductDto) {
-		Product product = productRepository.findById(id)
-				.orElseThrow(() -> new NoSuchElementException(
-						String.format("Product with id %d was not found", id)));
+	public List<ProductDto> findAll() {
+		List<ProductDto> productDtoList = new ArrayList<>();
+		for (Product product : productRepository.findAll()) {
+			final ProductDto productDto = productMapper.mapToProductDto(product);
+			productDtoList.add(productDto);
+		}
 
-		productRepository.updateById(product.getId(), productMapper.mapToProduct(updateProductDto));
+		return productDtoList;
 	}
 
-	@Transaction
+	@Override
+	public ProductDto findByName(String name) {
+		return productRepository.findByName(name)
+				.map(product -> productMapper.mapToProductDto(product))
+				.orElseThrow(() -> new NoSuchElementException(
+						String.format("Product with name %s was not found", name)));
+	}
+
+	@Transactional
+	@Override
+	public void update(ProductDto updateProductDto) {
+		productRepository.findById(updateProductDto.getId())
+				.orElseThrow(() -> new NoSuchElementException(
+						String.format("Product with id %d was not found", updateProductDto.getId())));
+
+		productRepository.update(productMapper.mapToProduct(updateProductDto));
+	}
+
+	@Transactional
 	@Override
 	public void deleteByID(long id) {
 		ProductDto productDto = findById(id);
 		if (productDto != null) {
-			productRepository.delete(id);
+			productRepository.deleteById(id);
 		}
 	}
 }

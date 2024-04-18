@@ -1,24 +1,27 @@
 package com.onlinestore.main.service.impl;
 
-import com.onlinestore.main.annotation.Transaction;
 import com.onlinestore.main.domain.dto.OrderDto;
 import com.onlinestore.main.domain.entity.Order;
+import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.mapper.IOrderMapper;
-import com.onlinestore.main.repository.IOrderRepository;
+import com.onlinestore.main.repository.impl.OrderRepositoryDao;
 import com.onlinestore.main.service.IOrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
 @AllArgsConstructor
 public class OrderService implements IOrderService {
 
-	private IOrderRepository orderRepository;
+	private OrderRepositoryDao orderRepository;
 	private IOrderMapper orderMapper;
 
-	@Transaction
+	@Transactional
 	@Override
 	public void add(OrderDto orderDto) {
 		orderRepository.add(orderMapper.mapToOrderDto(orderDto));
@@ -32,18 +35,36 @@ public class OrderService implements IOrderService {
 						String.format("Order with id %d was not found", id)));
 	}
 
-	@Transaction
+	@Transactional
 	@Override
-	public void updateById(long id, OrderDto orderDtoUpdate) {
-		Order order = orderRepository.findById(id)
-				.orElseThrow(() -> new NoSuchElementException(
-						String.format("Order with id %d was not found", id)));
-		orderRepository.updateById(order.getId(), orderMapper.mapToOrderDto(orderDtoUpdate));
+	public List<OrderDto> findAll() {
+		List<OrderDto> orderDtoList = new ArrayList<>();
+		for (Order order : orderRepository.findAll()) {
+			final OrderDto orderDto = orderMapper.mapToOrder(order);
+			orderDtoList.add(orderDto);
+		}
+
+		return orderDtoList;
 	}
 
-	@Transaction
+	@Transactional
+	@Override
+	public void updateById(OrderDto orderDtoUpdate) {
+		final OrderDto orderDto = findById(orderDtoUpdate.getId());
+		orderRepository.update(orderMapper.mapToOrderDto(orderDto));
+	}
+
+	@Transactional
 	@Override
 	public void deleteById(long id) {
-		orderRepository.deleteById(id);
+		final OrderDto orderDto = findById(id);
+		orderRepository.deleteById(orderDto.getId());
+	}
+
+	@Override
+	public List<Product> findProductsOrderId(long id) {
+		final OrderDto orderDto = findById(id);
+
+		return orderRepository.findProductsOrderId(orderDto.getId());
 	}
 }

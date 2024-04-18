@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -32,8 +33,18 @@ public class OrderController {
 		return orderDto;
 	}
 
-	public void updateById(long id, OrderDto orderDtoUpdate) {
-		orderService.updateById(id, orderDtoUpdate);
+	public List<OrderDto> findAll() {
+		final List<OrderDto> orderDtoList = orderService.findAll();
+		for (OrderDto orderDto : orderDtoList) {
+			final String json = jsonUtils.getJson(orderDto);
+			System.out.println("Method to findAll to OrderController - " + json);
+		}
+
+		return orderDtoList;
+	}
+
+	public void updateById(OrderDto orderDtoUpdate) {
+		orderService.updateById(orderDtoUpdate);
 
 		String json = jsonUtils.getJson(orderDtoUpdate);
 		System.out.println("Method to updateById to OrderController - " + json);
