@@ -17,8 +17,8 @@ public class LiquibaseConfig {
 	@Value("${liquibase.change-log}")
 	private String changelog;
 
-	@Value("${liquibase.schema-name}")
-	private String schemaName;
+//	@Value("${liquibase.schema-name}")
+//	private String schemaName;
 
 	public LiquibaseConfig(DataSource dataSource) {
 		this.dataSource = dataSource;
@@ -29,7 +29,6 @@ public class LiquibaseConfig {
 		SpringLiquibase liquibase = new SpringLiquibase();
 		liquibase.setDataSource(dataSource);
 		liquibase.setChangeLog(changelog);
-		liquibase.setDefaultSchema(schemaName);
 
 		return liquibase;
 	}

@@ -1,16 +1,22 @@
 package com.onlinestore.main.domain.entity;
 
+import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.stereotype.Component;
 
 @Data
-@Component
+@Entity
 public class WaitingList {
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
+	@ManyToOne
+	@JoinColumn(name = "user_id")
 	private User user;
 
+	@ManyToOne
+	@JoinColumn(name = "product_id")
 	private Product product;
 
 	private int counter;

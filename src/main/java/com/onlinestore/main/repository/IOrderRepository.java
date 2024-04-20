@@ -1,15 +1,11 @@
 package com.onlinestore.main.repository;
 
-import com.onlinestore.main.domain.entity.Order;
+import com.onlinestore.main.domain.entity.OrderStatus;
+import com.onlinestore.main.domain.entity.Product;
 
-import java.util.Optional;
+import java.util.List;
 
 public interface IOrderRepository {
-    void add(Order order);
 
-    Optional<Order> findById(long id);
-
-    void updateById(long id, Order updateOrder);
-
-    void deleteById(long id);
+	List<Product> findProductsOrderId(long id);
 }

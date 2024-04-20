@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -31,6 +32,25 @@ public class UserController {
 
 		String json = jsonUtils.getJson(userDto);
 		System.out.println("Method to findById to UserController - " + json);
+
+		return userDto;
+	}
+
+	public List<UserDto> findAll() {
+		final List<UserDto> userDtoList = userService.findAll();
+		for (UserDto userDto : userDtoList) {
+			final String json = jsonUtils.getJson(userDto);
+			System.out.println("Method to findAll to UserController - " + json);
+		}
+
+		return userDtoList;
+	}
+
+	public UserDto findByName(String name) {
+		final UserDto userDto = userService.findByName(name);
+
+		String json = jsonUtils.getJson(userDto);
+		System.out.println("Method to findByName to UserController - " + json);
 
 		return userDto;
 	}

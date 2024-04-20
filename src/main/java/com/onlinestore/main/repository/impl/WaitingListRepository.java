@@ -1,6 +1,7 @@
 package com.onlinestore.main.repository.impl;
 
 import com.onlinestore.main.domain.entity.WaitingList;
+import com.onlinestore.main.repository.IWaitingListRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -8,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class WaitingListRepository implements com.onlinestore.main.repository.IWaitingListRepository {
+public class WaitingListRepository implements IWaitingListRepository {
 
 	private final List<WaitingList> waitingLists = new ArrayList<>();
 

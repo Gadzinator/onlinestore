@@ -1,5 +1,8 @@
 package com.onlinestore.main.domain.entity;
 
+import lombok.Getter;
+
+@Getter
 public enum Category {
 
 	TOY("TOY"), CLOTHES("CLOTHES"), ELECTRONICS("ELECTRONICS");
@@ -8,9 +11,5 @@ public enum Category {
 
 	Category(String value) {
 		this.value = value;
-	}
-
-	public String getValue() {
-		return value;
 	}
 }
