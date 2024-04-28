@@ -17,9 +17,6 @@ public class LiquibaseConfig {
 	@Value("${liquibase.change-log}")
 	private String changelog;
 
-//	@Value("${liquibase.schema-name}")
-//	private String schemaName;
-
 	public LiquibaseConfig(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}

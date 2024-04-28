@@ -4,8 +4,9 @@ import com.onlinestore.main.domain.dto.RegistrationUserDto;
 import com.onlinestore.main.domain.dto.UserDto;
 import com.onlinestore.main.domain.entity.Role;
 import com.onlinestore.main.domain.entity.User;
+import com.onlinestore.main.excepiton.UserNotFoundException;
 import com.onlinestore.main.mapper.IUserMapper;
-import com.onlinestore.main.repository.impl.UserRepositoryDao;
+import com.onlinestore.main.repository.impl.UserRepository;
 import com.onlinestore.main.service.IUserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,13 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Component
 @AllArgsConstructor
 public class UserService implements IUserService {
 
-	private UserRepositoryDao userRepository;
+	private UserRepository userRepository;
 	private IUserMapper userMapper;
 
 	@Transactional
@@ -35,24 +35,27 @@ public class UserService implements IUserService {
 	public UserDto findById(long id) {
 		return userRepository.findById(id)
 				.map(user -> userMapper.mapToUserDto(user))
-				.orElseThrow(() -> new NoSuchElementException(
-						String.format("User with id %d was not found", id)));
+				.orElseThrow(() -> new UserNotFoundException("User was not found with id " + id));
 	}
 
 	@Override
 	public UserDto findByName(String name) {
 		return userRepository.findByName(name)
 				.map(user -> userMapper.mapToUserDto(user))
-				.orElseThrow(() -> new NoSuchElementException(
-						String.format("User with name %s was not found", name)));
+				.orElseThrow(() -> new UserNotFoundException("User was not found with name " + name));
 	}
 
 	@Override
 	public List<UserDto> findAll() {
 		List<UserDto> userDtoList = new ArrayList<>();
-		for (User user : userRepository.findAll()) {
-			final UserDto userDto = userMapper.mapToUserDto(user);
-			userDtoList.add(userDto);
+		final List<User> userList = userRepository.findAll();
+		if (!userList.isEmpty()) {
+			for (User user : userList) {
+				final UserDto userDto = userMapper.mapToUserDto(user);
+				userDtoList.add(userDto);
+			}
+		} else {
+			throw new UserNotFoundException("Users were not found");
 		}
 
 		return userDtoList;

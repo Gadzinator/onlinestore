@@ -7,8 +7,10 @@ import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.repository.impl.config.H2Config;
 import com.onlinestore.main.repository.impl.config.LiquibaseConfigTest;
 import jakarta.annotation.Resource;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,17 +22,22 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {H2Config.class, LiquibaseConfigTest.class})
 @Transactional
-public class OrderRepositoryDaoTest {
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+public class OrderRepositoryTest {
 
 	@Resource
-	private OrderRepositoryDao orderRepositoryDao;
+	private OrderRepository orderRepositoryDao;
 
 	@Resource
-	private ProductRepositoryDao productRepositoryDao;
+	private ProductRepository productRepositoryDao;
+
+	@After
+	public void tirDown() {
+
+	}
 
 	@Test
 	public void testAdd() {

@@ -10,9 +10,9 @@ public interface IOrderMapper {
 
 	@Mapping(target = "products", source = "products")
 	@Mapping(target = "created", dateFormat = "dd-MM-yyyy")
-	OrderDto mapToOrder(Order order);
+	Order mapToOrder(OrderDto orderDto);
 
 	@Mapping(source = "products", target = "products")
 	@Mapping(source = "created", target = "created", dateFormat = "dd-MM-yyyy")
-	Order mapToOrderDto(OrderDto orderDto);
+	OrderDto mapToOrderDto(Order order);
 }

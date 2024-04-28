@@ -20,10 +20,10 @@ import static org.junit.Assert.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {H2Config.class, LiquibaseConfigTest.class})
 @Transactional
-public class ProductRepositoryDaoTest {
+public class ProductRepositoryTest {
 
 	@Resource
-	private ProductRepositoryDao productRepositoryDao;
+	private ProductRepository productRepositoryDao;
 
 	private static final String UPDATE_PRODUCT_NAME = "Updated Product Name";
 

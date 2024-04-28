@@ -12,12 +12,12 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 
 @Repository
-public class UserRepositoryDao extends AbstractDao<User, Long> implements IUserRepository {
+public class UserRepository extends AbstractDao<User, Long> implements IUserRepository {
 
 	@PersistenceContext
 	private EntityManager entityManager;
 
-	protected UserRepositoryDao() {
+	protected UserRepository() {
 		super(User.class);
 	}
 

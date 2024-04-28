@@ -1,75 +1,63 @@
 package com.onlinestore.main.controller;
 
-import com.onlinestore.main.controller.utils.JsonUtils;
 import com.onlinestore.main.domain.dto.ProductDto;
-import com.onlinestore.main.domain.dto.UserDto;
 import com.onlinestore.main.service.IProductService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-@Controller
+@RestController
+@RequestMapping("/products")
 public class ProductController {
 
 	private final IProductService productService;
-	private final JsonUtils jsonUtils;
 
-	public ProductController(IProductService productService, JsonUtils jsonUtils) {
+	public ProductController(IProductService productService) {
 		this.productService = productService;
-		this.jsonUtils = jsonUtils;
 	}
 
-	public void add(ProductDto productDto) {
-		productService.add(productDto);
-
-		String json = jsonUtils.getJson(productDto);
-		System.out.println("Method to add to ProductController - " + json);
-	}
-
-	public List<ProductDto> findAll() {
-		final List<ProductDto> productDtoList = productService.findAll();
-		for (ProductDto productDto : productDtoList) {
-			final String json = jsonUtils.getJson(productDto);
-			System.out.println("Method to findAll to ProductController - " + json);
+	@PostMapping
+	public ResponseEntity<?> add(@RequestBody(required = false) @Valid ProductDto productDto) {
+		if (productDto == null) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
-		return productDtoList;
+		productService.add(productDto);
+
+		return new ResponseEntity<>("Product add", HttpStatus.CREATED);
 	}
 
-	public ProductDto findById(long id) {
+	@GetMapping
+	public ResponseEntity<List<ProductDto>> findAll() {
+		return new ResponseEntity<>(productService.findAll(), HttpStatus.OK);
+	}
+
+	@GetMapping("/id/{id}")
+	public ResponseEntity<?> findById(@PathVariable(value = "id") Long id) {
 		ProductDto productDto = productService.findById(id);
 
-		String json = jsonUtils.getJson(productDto);
-		System.out.println("Method to findById to ProductController - " + json);
-
-		return productDto;
+		return new ResponseEntity<>(productDto, HttpStatus.OK);
 	}
 
-	public ProductDto findByName(String name) {
-		final ProductDto productDto = productService.findByName(name);
-
-		String json = jsonUtils.getJson(productDto);
-		System.out.println("Method to findByName to ProductController - " + json);
-
-		return productDto;
+	@GetMapping("/name/{name}")
+	public ResponseEntity<?> findByName(@PathVariable(value = "name") String name) {
+		return new ResponseEntity<>(productService.findByName(name), HttpStatus.OK);
 	}
 
-	public void update(ProductDto updateProductDto) {
+	@PutMapping
+	public ResponseEntity<?> update(@RequestBody ProductDto updateProductDto) {
 		productService.update(updateProductDto);
 
-		String json = jsonUtils.getJson(updateProductDto);
-		System.out.println("Method to update to ProductController " + json);
+		return new ResponseEntity<>(updateProductDto, HttpStatus.OK);
 	}
 
-	public void deleteByID(long id) {
+	@DeleteMapping("/{id}")
+	public ResponseEntity<?> deleteByID(@PathVariable("id") Long id) {
 		productService.deleteByID(id);
 
-		Map<String, Object> response = new HashMap<>();
-		response.put("Message", "Product with Id " + id + " has been successfully deleted");
-		String json = jsonUtils.getJson(response);
-		System.out.println(json);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }

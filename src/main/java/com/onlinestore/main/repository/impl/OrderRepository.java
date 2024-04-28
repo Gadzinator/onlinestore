@@ -11,12 +11,12 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public class OrderRepositoryDao extends AbstractDao<Order, Long> implements IOrderRepository {
+public class OrderRepository extends AbstractDao<Order, Long> implements IOrderRepository {
 
 	@PersistenceContext
 	private EntityManager entityManager;
 
-	protected OrderRepositoryDao() {
+	protected OrderRepository() {
 		super(Order.class);
 	}
 
