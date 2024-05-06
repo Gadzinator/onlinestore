@@ -24,8 +24,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 @ContextConfiguration(classes = ServiceTestConfiguration.class)
@@ -245,12 +253,14 @@ public class OrderServiceTest {
 	}
 
 	private Product createProduct() {
+		Category category = new Category();
+		category.setName("TOY");
 		Product product = new Product();
 		product.setId(PRODUCT_ID);
 		product.setName(PRODUCT_NAME);
 		product.setBrand("Toy brand");
 		product.setDescription("Toy description");
-		product.setCategory(Category.TOY);
+		product.setCategory(category);
 		product.setPrice(100);
 		product.setCreated(LocalDate.now());
 		product.setAvailable(true);
@@ -265,7 +275,7 @@ public class OrderServiceTest {
 		productDto.setName(PRODUCT_NAME);
 		productDto.setBrand("Toy brand");
 		productDto.setDescription("Toy description");
-		productDto.setCategory(Category.TOY.getValue());
+		productDto.setCategory("TOY");
 		productDto.setPrice(100);
 		productDto.setCreated("01-11-2024");
 		productDto.setAvailable(true);

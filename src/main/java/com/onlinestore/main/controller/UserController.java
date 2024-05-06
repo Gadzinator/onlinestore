@@ -1,12 +1,15 @@
 package com.onlinestore.main.controller;
 
-import com.onlinestore.main.domain.dto.RegistrationUserDto;
 import com.onlinestore.main.domain.dto.UserDto;
 import com.onlinestore.main.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -16,15 +19,6 @@ import java.util.List;
 public class UserController {
 
 	private final IUserService userService;
-
-	@PostMapping("/registration")
-	public ResponseEntity<?> createNewUser(@RequestBody(required = false) RegistrationUserDto registrationUserDto) {
-		if (registrationUserDto == null) {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-
-		return new ResponseEntity<>(userService.createNewUser(registrationUserDto), HttpStatus.CREATED);
-	}
 
 	@GetMapping("/id/{id}")
 	public ResponseEntity<UserDto> findById(@PathVariable(value = "id") Long id) {

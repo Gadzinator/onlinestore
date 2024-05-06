@@ -12,11 +12,12 @@ import java.util.Date;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Builder
+@Data
 public class ErrorDetails {
 
 	private Date date;
 
 	private String message;
 
-	private String  details;
+	private String details;
 }

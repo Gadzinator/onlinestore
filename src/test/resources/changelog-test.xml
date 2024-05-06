@@ -283,4 +283,43 @@
     <changeSet id="rename_table_user" author="Alexei Grigorev">
         <renameTable oldTableName="user" newTableName="users"/>
     </changeSet>
+
+    <changeSet id="add_column_order_user" author="Alexei Grigorev">
+        <addColumn tableName="order_item">
+            <column name="user_id" type="bigint"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add_fk_order_user" author="Alexei Grigorev">
+        <addForeignKeyConstraint baseTableName="order_item"
+                                 baseColumnNames="user_id"
+                                 constraintName="fk_order_user"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+        />
+    </changeSet>
+
+    <changeSet id="create_new_table_category" author="Alexei Grigorev">
+        <createTable tableName="category">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="rename_column_product_category" author="Alexei Grigorev">
+        <renameColumn tableName="product" oldColumnName="category" newColumnName="category_id"/>
+        <modifyDataType tableName="product" columnName="category_id" newDataType="bigint"/>
+    </changeSet>
+
+    <changeSet id="add_fk_product_category" author="">
+        <addForeignKeyConstraint baseTableName="product"
+                                 baseColumnNames="category_id"
+                                 constraintName="fk_product_category"
+                                 referencedTableName="category"
+                                 referencedColumnNames="id"/>
+    </changeSet>
 </databaseChangeLog>

@@ -1,13 +1,21 @@
 package com.onlinestore.main.domain.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Data
 @Entity
+@Table(name = "product")
 public class Product {
 
 	@Id
@@ -23,8 +31,8 @@ public class Product {
 	@Column(name = "description")
 	private String description;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "category")
+	@ManyToOne(cascade = CascadeType.PERSIST, optional = false)
+	@JoinColumn(name = "category_id")
 	private Category category;
 
 	@Column(name = "price")

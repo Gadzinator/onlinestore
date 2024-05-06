@@ -3,9 +3,8 @@ package com.onlinestore.main.controller.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlinestore.main.excepiton.JsonConversionException;
-import org.springframework.stereotype.Component;
 
-@Component
+
 public class JsonUtils {
 
 	private final ObjectMapper objectMapper;

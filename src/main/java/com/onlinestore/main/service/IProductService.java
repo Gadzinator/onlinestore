@@ -3,7 +3,6 @@ package com.onlinestore.main.service;
 import com.onlinestore.main.domain.dto.ProductDto;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IProductService {
 	void add(ProductDto productDto);

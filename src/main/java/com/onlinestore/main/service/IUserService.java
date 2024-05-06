@@ -1,13 +1,13 @@
 package com.onlinestore.main.service;
 
+import com.onlinestore.main.domain.dto.PasswordChangeRequest;
 import com.onlinestore.main.domain.dto.RegistrationUserDto;
 import com.onlinestore.main.domain.dto.UserDto;
-import com.onlinestore.main.domain.entity.Order;
-import com.onlinestore.main.domain.entity.User;
 
 import java.util.List;
 
 public interface IUserService {
+
 	UserDto createNewUser(RegistrationUserDto registrationUserDto);
 
 	UserDto findById(long id);
@@ -17,4 +17,6 @@ public interface IUserService {
 	UserDto findByName(String name);
 
 	void deleteById(long id);
+
+	void changePassword(String userName, PasswordChangeRequest passwordChangeRequest);
 }

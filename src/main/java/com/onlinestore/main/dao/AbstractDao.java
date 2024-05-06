@@ -10,7 +10,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
-
 public abstract class AbstractDao<T, PK extends Serializable> {
 
 	@PersistenceContext
