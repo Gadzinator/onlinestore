@@ -15,12 +15,12 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public class ProductRepositoryDao extends AbstractDao<Product, Long> implements IProductRepository {
+public class ProductRepository extends AbstractDao<Product, Long> implements IProductRepository {
 
 	@PersistenceContext
 	private EntityManager entityManager;
 
-	protected ProductRepositoryDao() {
+	protected ProductRepository() {
 		super(Product.class);
 	}
 

@@ -13,9 +13,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.sql.DataSource;
 import java.util.Properties;
 
-@Configuration
 @EnableTransactionManagement
-@ComponentScan(basePackages = "com.onlinestore")
+@Configuration
+@ComponentScan(basePackages = "com.onlinestore.main.repository.impl")
 public class H2Config {
 
 	@Bean

@@ -20,10 +20,10 @@ import static org.junit.Assert.*;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {H2Config.class, LiquibaseConfigTest.class})
 @Transactional
-public class UserRepositoryDaoTest {
+public class UserRepositoryTest {
 
 	@Resource
-	private UserRepositoryDao userRepositoryDao;
+	private UserRepository userRepositoryDao;
 
 	private final String USER_NAME = "Alex";
 
