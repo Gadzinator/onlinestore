@@ -1,9 +1,11 @@
 package com.onlinestore.main.service.impl;
 
 import com.onlinestore.main.domain.dto.ProductDto;
+import com.onlinestore.main.domain.entity.Category;
 import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.excepiton.ProductNotFoundException;
 import com.onlinestore.main.mapper.IProductMapper;
+import com.onlinestore.main.repository.impl.CategoryRepository;
 import com.onlinestore.main.repository.impl.ProductRepository;
 import com.onlinestore.main.service.IProductService;
 import lombok.AllArgsConstructor;
@@ -18,6 +20,9 @@ import java.util.List;
 public class ProductService implements IProductService {
 
 	private ProductRepository productRepository;
+
+	private CategoryRepository categoryRepository;
+
 	private IProductMapper productMapper;
 
 	@Transactional
@@ -27,6 +32,14 @@ public class ProductService implements IProductService {
 			throw new NullPointerException("ProductDto cannot be null");
 		}
 		Product product = productMapper.mapToProduct(productDto);
+
+		Category category = findCategoryByName(productDto.getCategory());
+		if (category == null) {
+			category = addCategory(productDto.getCategory());
+		}
+
+		product.setCategory(category);
+
 		productRepository.add(product);
 	}
 
@@ -63,10 +76,16 @@ public class ProductService implements IProductService {
 	@Transactional
 	@Override
 	public void update(ProductDto updateProductDto) {
-		productRepository.findById(updateProductDto.getId())
+		Product product = productRepository.findById(updateProductDto.getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not was found with id " + updateProductDto.getId()));
+		Category category = findCategoryByName(updateProductDto.getCategory());
 
-		productRepository.update(productMapper.mapToProduct(updateProductDto));
+		if (category == null) {
+			category = addCategory(updateProductDto.getCategory());
+		}
+
+		product.setCategory(category);
+		productRepository.update(product);
 	}
 
 	@Transactional
@@ -78,5 +97,18 @@ public class ProductService implements IProductService {
 		} else {
 			throw new ProductNotFoundException("Product not was found with id " + id);
 		}
+	}
+
+	private Category findCategoryByName(String categoryName) {
+		return categoryRepository.findByName(categoryName)
+				.orElse(null);
+	}
+
+	private Category addCategory(String categoryName) {
+		Category category = new Category();
+		category.setName(categoryName);
+		categoryRepository.add(category);
+
+		return category;
 	}
 }

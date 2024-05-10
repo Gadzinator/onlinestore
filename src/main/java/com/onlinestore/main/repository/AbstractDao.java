@@ -1,4 +1,4 @@
-package com.onlinestore.main.dao;
+package com.onlinestore.main.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -9,7 +9,6 @@ import jakarta.persistence.criteria.Root;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
-
 
 public abstract class AbstractDao<T, PK extends Serializable> {
 

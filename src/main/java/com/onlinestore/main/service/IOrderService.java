@@ -1,7 +1,6 @@
 package com.onlinestore.main.service;
 
 import com.onlinestore.main.domain.dto.OrderDto;
-import com.onlinestore.main.domain.entity.Order;
 import com.onlinestore.main.domain.entity.Product;
 
 import java.util.List;

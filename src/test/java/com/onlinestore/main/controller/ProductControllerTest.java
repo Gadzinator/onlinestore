@@ -4,15 +4,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlinestore.main.config.HibernateConfig;
 import com.onlinestore.main.config.LiquibaseConfig;
 import com.onlinestore.main.controller.config.WebMvcConfig;
+import com.onlinestore.main.domain.dto.CategoryDto;
 import com.onlinestore.main.domain.dto.ProductDto;
-import com.onlinestore.main.domain.entity.Category;
 import com.onlinestore.main.excepiton.ProductNotFoundException;
+import com.onlinestore.main.security.WebSecurityConfig;
 import com.onlinestore.main.service.IProductService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithAnonymousUser;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -25,11 +29,14 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {HibernateConfig.class, LiquibaseConfig.class, WebMvcConfig.class})
+@ContextConfiguration(classes = {HibernateConfig.class, LiquibaseConfig.class, WebMvcConfig.class, WebSecurityConfig.class})
 @WebAppConfiguration
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class ProductControllerTest {
@@ -53,10 +60,11 @@ public class ProductControllerTest {
 
 	@Before
 	public void setUp() {
-		this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).build();
+		this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).apply((SecurityMockMvcConfigurers.springSecurity())).build();
 	}
 
 	@Test
+	@WithMockUser(username = "Alex", roles = "ADMIN")
 	public void addWhenHttpStatusOk() throws Exception {
 		final ProductDto productDto = createProductDto();
 		mockMvc.perform(post("/products")
@@ -66,8 +74,19 @@ public class ProductControllerTest {
 	}
 
 	@Test
+	@WithAnonymousUser
+	public void addWhenHttpIsUnauthorized() throws Exception {
+		final ProductDto productDto = createProductDto();
+		mockMvc.perform(post("/products")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(objectMapper.writeValueAsString(productDto)))
+				.andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	@WithMockUser(username = "Alex", roles = "ADMIN")
 	public void addWhenHttPStatusBadRequest() throws Exception {
-		mockMvc.perform(post("/users/registration")
+		mockMvc.perform(post("/products")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(null)))
 				.andExpect(status().isBadRequest());
@@ -113,6 +132,7 @@ public class ProductControllerTest {
 	}
 
 	@Test
+	@WithMockUser(username = "Alex", roles = "ADMIN")
 	public void updateWhenHttpStatusOk() throws Exception {
 		final ProductDto productDto = createProductDto();
 		productService.add(productDto);
@@ -124,6 +144,7 @@ public class ProductControllerTest {
 	}
 
 	@Test
+	@WithMockUser(username = "Alex", roles = "ADMIN")
 	public void updateWhenProductNotFoundException() throws Exception {
 		final ProductDto productDto = createProductDto();
 		productDto.setId(100);
@@ -136,6 +157,7 @@ public class ProductControllerTest {
 	}
 
 	@Test
+	@WithMockUser(username = "Alex", roles = "ADMIN")
 	public void deleteByIdWhenHttpStatusNoContent() throws Exception {
 		final ProductDto productDto = createProductDto();
 		productService.add(productDto);
@@ -144,6 +166,7 @@ public class ProductControllerTest {
 	}
 
 	@Test
+	@WithMockUser(username = "Alex", roles = "ADMIN")
 	public void deleteByIdWhenProductNotFoundException() throws Exception {
 		final ProductDto productDto = createProductDto();
 		productService.add(productDto);
@@ -155,11 +178,13 @@ public class ProductControllerTest {
 	}
 
 	private ProductDto createProductDto() {
+		CategoryDto categoryDto = new CategoryDto();
+		categoryDto.setId(1);
 		ProductDto productDto = new ProductDto();
 		productDto.setName(PRODUCT_NAME);
 		productDto.setBrand("Toy brand");
 		productDto.setDescription("Toy description");
-		productDto.setCategory(Category.TOY.getValue());
+		productDto.setCategory("TOY");
 		productDto.setPrice(100);
 		productDto.setCreated("01-11-2024");
 		productDto.setAvailable(true);
@@ -167,4 +192,6 @@ public class ProductControllerTest {
 
 		return productDto;
 	}
+
+
 }

@@ -2,18 +2,21 @@ package com.onlinestore.main.service.impl;
 
 import com.onlinestore.main.domain.dto.RegistrationUserDto;
 import com.onlinestore.main.domain.dto.UserDto;
-import com.onlinestore.main.domain.entity.Role;
 import com.onlinestore.main.domain.entity.User;
+import com.onlinestore.main.excepiton.PasswordMismatchException;
 import com.onlinestore.main.excepiton.UserNotFoundException;
+import com.onlinestore.main.excepiton.UsernameNotUniqueException;
 import com.onlinestore.main.mapper.IUserMapperImpl;
 import com.onlinestore.main.repository.impl.UserRepository;
 import com.onlinestore.main.service.impl.config.ServiceTestConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
@@ -21,14 +24,27 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static com.onlinestore.main.domain.entity.Role.ROLE_USER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 @ContextConfiguration(classes = ServiceTestConfiguration.class)
 public class UserServiceTest {
 
 	private static final String USER_NAME = "Alex";
+
+	private static final String USER_EMAIL = "alex@gmail.ru";
+
+	private static final String PASSWORD = "Alex";
 
 	private static final long USER_ID = 1;
 
@@ -38,30 +54,63 @@ public class UserServiceTest {
 	@Mock
 	private IUserMapperImpl userMapper;
 
+	@Mock
+	private PasswordEncoder passwordEncoder;
+
+	@Captor
+	private ArgumentCaptor<User> userArgumentCaptor;
+
 	@InjectMocks
 	private UserService userService;
 
 	@Test
-	public void testCreateNewUser() {
-		final RegistrationUserDto registrationUserDto = createRegistrationUserDto();
+	public void testCreateNewUserWhenUserValidate() {
+		RegistrationUserDto registrationUserDto = createRegistrationUserDto();
+		UserDto userDto = createUserDto();
 
+		when(userRepository.findByName(USER_NAME)).thenReturn(Optional.empty());
+		when(userRepository.findUserByEmail(USER_EMAIL)).thenReturn(Optional.empty());
+		when(passwordEncoder.encode(anyString())).thenReturn(PASSWORD);
+
+		doNothing().when(userRepository).add(any(User.class));
 		when(userMapper.mapToUserDto(any(User.class))).thenCallRealMethod();
 
-		final UserDto createdUserDto = userService.createNewUser(registrationUserDto);
+		userService.createNewUser(registrationUserDto);
 
-		final ArgumentCaptor<User> userArgumentCaptor = ArgumentCaptor.forClass(User.class);
+		verify(userRepository).findByName(USER_NAME);
+		verify(userRepository).findUserByEmail(USER_EMAIL);
+		verify(passwordEncoder).encode(PASSWORD);
 		verify(userRepository).add(userArgumentCaptor.capture());
-		final User savedUser = userArgumentCaptor.getValue();
-		verify(userMapper).mapToUserDto(savedUser);
+		verify(userMapper).mapToUserDto(userArgumentCaptor.capture());
 
-		assertEquals(savedUser.getId(), createdUserDto.getId());
-		assertEquals(savedUser.getName(), createdUserDto.getName());
-		assertEquals(savedUser.getEmail(), createdUserDto.getEmail());
+		User savedUser = userArgumentCaptor.getValue();
+		assertEquals(savedUser.getName(), userDto.getName());
+		assertEquals(savedUser.getEmail(), userDto.getEmail());
 	}
 
 	@Test
-	public void testCreateNewUserWithUserNull() {
-		assertThrows(NullPointerException.class, () -> userService.createNewUser(null));
+	public void testCreateNewUserWhenPasswordNotValidate() {
+		RegistrationUserDto registrationUserDto = createRegistrationUserDto();
+		registrationUserDto.setConfirmPassword("sdasdasdas");
+
+		when(userRepository.findByName(USER_NAME)).thenReturn(Optional.empty());
+
+		assertThrows(PasswordMismatchException.class, () -> userService.createNewUser(registrationUserDto));
+
+		verify(userRepository).findByName(USER_NAME);
+	}
+
+	@Test
+	public void testCreateNewUserWhenEmailNotValidate() {
+		RegistrationUserDto registrationUserDto = createRegistrationUserDto();
+
+		when(userRepository.findByName(USER_NAME)).thenReturn(Optional.empty());
+		when(userRepository.findUserByEmail(USER_EMAIL)).thenReturn(Optional.of(new User()));
+
+		assertThrows(UsernameNotUniqueException.class, () -> userService.createNewUser(registrationUserDto));
+
+		verify(userRepository).findByName(USER_NAME);
+		verify(userRepository).findUserByEmail(USER_EMAIL);
 	}
 
 	@Test
@@ -174,9 +223,10 @@ public class UserServiceTest {
 	private RegistrationUserDto createRegistrationUserDto() {
 		RegistrationUserDto registrationUserDto = new RegistrationUserDto();
 		registrationUserDto.setId(USER_ID);
-		registrationUserDto.setName("Alex");
-		registrationUserDto.setPassword("password");
-		registrationUserDto.setEmail("alex@gmail.com");
+		registrationUserDto.setName(USER_NAME);
+		registrationUserDto.setPassword(PASSWORD);
+		registrationUserDto.setConfirmPassword(PASSWORD);
+		registrationUserDto.setEmail(USER_EMAIL);
 
 		return registrationUserDto;
 	}
@@ -185,9 +235,9 @@ public class UserServiceTest {
 		User user = new User();
 		user.setId(USER_ID);
 		user.setName(USER_NAME);
-		user.setRole(Role.ROLE_USER);
-		user.setPassword("password");
-		user.setEmail("@email");
+		user.setRole(ROLE_USER);
+		user.setPassword(PASSWORD);
+		user.setEmail(USER_EMAIL);
 
 		return user;
 	}
@@ -195,8 +245,8 @@ public class UserServiceTest {
 	private UserDto createUserDto() {
 		UserDto userDto = new UserDto();
 		userDto.setId(USER_ID);
-		userDto.setName("User Dto");
-		userDto.setEmail("userDto@gmail.com");
+		userDto.setName(USER_NAME);
+		userDto.setEmail(USER_EMAIL);
 
 		return userDto;
 	}

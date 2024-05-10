@@ -1,42 +1,43 @@
 package com.onlinestore.main.repository.impl;
 
+import com.onlinestore.main.dao.AbstractDao;
+import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.domain.entity.WaitingList;
+import com.onlinestore.main.domain.entity.WaitingList_;
 import com.onlinestore.main.repository.IWaitingListRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class WaitingListRepository implements IWaitingListRepository {
+public class WaitingListRepository extends AbstractDao<WaitingList, Long> implements IWaitingListRepository {
 
-	private final List<WaitingList> waitingLists = new ArrayList<>();
+	@PersistenceContext
+	private EntityManager entityManager;
 
-	@Override
-	public void add(WaitingList waitingList) {
-		waitingLists.add(waitingList);
+	protected WaitingListRepository() {
+		super(WaitingList.class);
 	}
 
 	@Override
-	public Optional<WaitingList> indById(long id) {
-		return waitingLists.stream()
-				.filter(waitingList -> waitingList.getId() == id)
-				.findFirst();
-	}
+	public Optional<WaitingList> findByProduct(Product product) {
+		final CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+		final CriteriaQuery<WaitingList> criteriaQuery = criteriaBuilder.createQuery(WaitingList.class);
+		final Root<WaitingList> root = criteriaQuery.from(WaitingList.class);
+		criteriaQuery.select(root);
+		criteriaQuery.where(criteriaBuilder.equal(root.get(WaitingList_.product), product));
 
-	@Override
-	public void update(long id, WaitingList waitingListUpdate) {
-		for (int i = 0; i < waitingLists.size(); i++) {
-			WaitingList waitingList = waitingLists.get(i);
-			if (waitingList.getId() == id) {
-				waitingLists.set(i, waitingListUpdate);
-			}
+		try {
+			final WaitingList result = entityManager.createQuery(criteriaQuery).getSingleResult();
+			return Optional.ofNullable(result);
+		} catch (NoResultException e) {
+			return Optional.empty();
 		}
-	}
-
-	@Override
-	public void delete(long id) {
-		waitingLists.removeIf(waitingList -> waitingList.getId() == id);
 	}
 }

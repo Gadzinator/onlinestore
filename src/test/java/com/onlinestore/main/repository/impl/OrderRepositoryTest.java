@@ -7,7 +7,6 @@ import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.repository.impl.config.H2Config;
 import com.onlinestore.main.repository.impl.config.LiquibaseConfigTest;
 import jakarta.annotation.Resource;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.annotation.DirtiesContext;
@@ -20,7 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {H2Config.class, LiquibaseConfigTest.class})
@@ -29,23 +31,18 @@ import static org.junit.jupiter.api.Assertions.*;
 public class OrderRepositoryTest {
 
 	@Resource
-	private OrderRepository orderRepositoryDao;
+	private OrderRepository orderRepository;
 
 	@Resource
-	private ProductRepository productRepositoryDao;
-
-	@After
-	public void tirDown() {
-
-	}
+	private ProductRepository productRepository;
 
 	@Test
 	public void testAdd() {
 		final Product product = createProduct();
-		final Order order = createorder(product);
-		orderRepositoryDao.add(order);
+		final Order order = createOrder(product);
+		orderRepository.add(order);
 
-		final Optional<Order> optionalOrder = orderRepositoryDao.findById(order.getId());
+		final Optional<Order> optionalOrder = orderRepository.findById(order.getId());
 
 		assertTrue(optionalOrder.isPresent());
 		Order retrievedOrder = optionalOrder.get();
@@ -65,11 +62,11 @@ public class OrderRepositoryTest {
 	@Test
 	public void testFindById() {
 		final Product product = createProduct();
-		final Order order = createorder(product);
+		final Order order = createOrder(product);
 
-		orderRepositoryDao.add(order);
+		orderRepository.add(order);
 
-		Optional<Order> optionalOrder = orderRepositoryDao.findById(order.getId());
+		Optional<Order> optionalOrder = orderRepository.findById(order.getId());
 
 		assertTrue(optionalOrder.isPresent());
 		Order retrievedOrder = optionalOrder.get();
@@ -81,15 +78,15 @@ public class OrderRepositoryTest {
 	@Test
 	public void testFindAll() {
 		final Product product = createProduct();
-		final Order order1 = createorder(product);
+		final Order order1 = createOrder(product);
 
 		Order order2 = new Order();
 		order2.setCreated(LocalDate.now());
 		order2.setOrderStatus(OrderStatus.READY);
-		orderRepositoryDao.add(order1);
-		orderRepositoryDao.add(order2);
+		orderRepository.add(order1);
+		orderRepository.add(order2);
 
-		List<Order> allOrders = orderRepositoryDao.findAll();
+		List<Order> allOrders = orderRepository.findAll();
 
 		assertNotNull(allOrders);
 		assertEquals(2, allOrders.size());
@@ -100,16 +97,16 @@ public class OrderRepositoryTest {
 	@Test
 	public void testUpdate() {
 		Product product = createProduct();
-		productRepositoryDao.add(product);
+		productRepository.add(product);
 
-		final Order order = createorder(product);
-		orderRepositoryDao.add(order);
+		final Order order = createOrder(product);
+		orderRepository.add(order);
 
 		order.setOrderStatus(OrderStatus.IN_PROGRESS);
 
-		orderRepositoryDao.update(order);
+		orderRepository.update(order);
 
-		Order retrievedOrder = orderRepositoryDao.findById(order.getId()).orElse(null);
+		Order retrievedOrder = orderRepository.findById(order.getId()).orElse(null);
 		assertNotNull(retrievedOrder);
 		assertEquals(order.getOrderStatus(), retrievedOrder.getOrderStatus());
 	}
@@ -117,25 +114,25 @@ public class OrderRepositoryTest {
 	@Test
 	public void testDeleteById() {
 		Product product = createProduct();
-		productRepositoryDao.add(product);
+		productRepository.add(product);
 		long productId = product.getId();
 
-		productRepositoryDao.deleteById(productId);
+		productRepository.deleteById(productId);
 
-		Optional<Product> deletedProductOptional = productRepositoryDao.findById(productId);
+		Optional<Product> deletedProductOptional = productRepository.findById(productId);
 		assertFalse(deletedProductOptional.isPresent(), "Сущность не должна быть найдена после удаления");
 	}
 
 	@Test
 	public void testFindProductsOrderId() {
 		final Product product = createProduct();
-		final Order order = createorder(product);
-		final List<Product> productList = orderRepositoryDao.findProductsOrderId(order.getId());
+		final Order order = createOrder(product);
+		final List<Product> productList = orderRepository.findProductsOrderId(order.getId());
 
 		assertTrue(productList.isEmpty());
 	}
 
-	private Order createorder(Product product) {
+	private Order createOrder(Product product) {
 		List<Product> products = new ArrayList<>();
 		products.add(product);
 		Order order = new Order();
@@ -147,11 +144,13 @@ public class OrderRepositoryTest {
 	}
 
 	private Product createProduct() {
+		Category category = new Category();
+		category.setName("CLOTHES");
 		Product product = new Product();
 		product.setName("Toy name");
 		product.setBrand("Toy brand");
 		product.setDescription("Toy description");
-		product.setCategory(Category.CLOTHES);
+		product.setCategory(category);
 		product.setPrice(100);
 		product.setCreated(LocalDate.parse("2023-10-10"));
 		product.setAvailable(true);

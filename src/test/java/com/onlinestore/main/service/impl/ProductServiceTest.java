@@ -1,10 +1,12 @@
 package com.onlinestore.main.service.impl;
 
+import com.onlinestore.main.domain.dto.CategoryDto;
 import com.onlinestore.main.domain.dto.ProductDto;
 import com.onlinestore.main.domain.entity.Category;
 import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.excepiton.ProductNotFoundException;
 import com.onlinestore.main.mapper.IProductMapperImpl;
+import com.onlinestore.main.repository.impl.CategoryRepository;
 import com.onlinestore.main.repository.impl.ProductRepository;
 import com.onlinestore.main.service.impl.config.ServiceTestConfiguration;
 import org.junit.Test;
@@ -22,9 +24,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 @ContextConfiguration(classes = ServiceTestConfiguration.class)
@@ -40,20 +49,27 @@ public class ProductServiceTest {
 	@Spy
 	private IProductMapperImpl productMapper;
 
+	@Mock
+	private CategoryRepository categoryRepository;
+
 	@InjectMocks
 	private ProductService productService;
 
 	@Test
 	public void testAdd() {
+		Category category = new Category();
+		category.setName("TOY");
 		ProductDto productDto = createProductDto();
 		final Product product = createProduct();
 
-		when(productMapper.mapToProduct(productDto)).thenReturn(product);
+		when(productMapper.mapToProduct(any(ProductDto.class))).thenReturn(product);
+		when(categoryRepository.findByName(productDto.getCategory())).thenReturn(Optional.of(category));
 		doNothing().when(productRepository).add(product);
 
 		productService.add(productDto);
 
 		verify(productMapper).mapToProduct(productDto);
+		verify(categoryRepository).findByName(productDto.getCategory());
 		verify(productRepository).add(product);
 		assertEquals(product.getId(), productDto.getId());
 		assertEquals(product.getName(), productDto.getName());
@@ -148,11 +164,13 @@ public class ProductServiceTest {
 	@Test
 	public void testUpdateWhenProductFound() {
 		final ProductDto productDto = createProductDto();
-		productDto.setName("Product Dto");
+		Category category = new Category();
+		category.setName("TOY");
 		final Product product = createProduct();
+		product.setName("Product Dto");
 
 		when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
-		when(productMapper.mapToProduct(any(ProductDto.class))).thenCallRealMethod();
+		when(categoryRepository.findByName(productDto.getCategory())).thenReturn(Optional.of(category));
 		doNothing().when(productRepository).update(any(Product.class));
 
 		productService.update(productDto);
@@ -160,7 +178,7 @@ public class ProductServiceTest {
 		final ArgumentCaptor<Product> productArgumentCaptor = ArgumentCaptor.forClass(Product.class);
 
 		verify(productRepository).findById(PRODUCT_ID);
-		verify(productMapper).mapToProduct(productDto);
+		verify(categoryRepository).findByName(productDto.getCategory());
 		verify(productRepository).update(productArgumentCaptor.capture());
 		final Product savedProduct = productArgumentCaptor.getValue();
 
@@ -201,12 +219,14 @@ public class ProductServiceTest {
 	}
 
 	private Product createProduct() {
+		Category category = new Category();
+		category.setName("TOY");
 		Product product = new Product();
 		product.setId(PRODUCT_ID);
 		product.setName(PRODUCT_NAME);
 		product.setBrand("Toy brand");
 		product.setDescription("Toy description");
-		product.setCategory(Category.TOY);
+		product.setCategory(category);
 		product.setPrice(100);
 		product.setCreated(LocalDate.now());
 		product.setAvailable(true);
@@ -216,12 +236,15 @@ public class ProductServiceTest {
 	}
 
 	private ProductDto createProductDto() {
+		CategoryDto categoryDto = new CategoryDto();
+		categoryDto.setId(1);
+		categoryDto.setName("TOY");
 		ProductDto productDto = new ProductDto();
 		productDto.setId(PRODUCT_ID);
 		productDto.setName(PRODUCT_NAME);
 		productDto.setBrand("Toy brand");
 		productDto.setDescription("Toy description");
-		productDto.setCategory(Category.TOY.getValue());
+		productDto.setCategory("TOY");
 		productDto.setPrice(100);
 		productDto.setCreated("01-11-2024");
 		productDto.setAvailable(true);

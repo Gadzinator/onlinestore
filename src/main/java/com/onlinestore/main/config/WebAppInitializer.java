@@ -1,13 +1,13 @@
 package com.onlinestore.main.config;
 
-
+import com.onlinestore.main.security.WebSecurityConfig;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
-public class WebAppInitializer extends  AbstractAnnotationConfigDispatcherServletInitializer {
+public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServletInitializer {
 
 	@Override
 	protected Class<?>[] getRootConfigClasses() {
-		return new Class[]{AppConfig.class};
+		return new Class[]{AppConfig.class, WebSecurityConfig.class};
 	}
 
 	@Override

@@ -32,7 +32,6 @@ public class ProductRepositoryTest {
 	@Test
 	public void testAdd() {
 		final Product product = createProduct();
-
 		productRepositoryDao.add(product);
 
 		final Optional<Product> optionalProduct = productRepositoryDao.findById(product.getId());
@@ -47,9 +46,7 @@ public class ProductRepositoryTest {
 	@Test
 	public void testFindById() {
 		Product product = createProduct();
-
 		productRepositoryDao.add(product);
-
 
 		final Optional<Product> optionalProduct = productRepositoryDao.findById(product.getId());
 
@@ -75,7 +72,6 @@ public class ProductRepositoryTest {
 	@Test
 	public void testUpdate() {
 		Product product = createProduct();
-
 		productRepositoryDao.add(product);
 
 		product.setName(UPDATE_PRODUCT_NAME);
@@ -91,7 +87,6 @@ public class ProductRepositoryTest {
 	@Test
 	public void testFindByName() {
 		Product product = createProduct();
-
 		productRepositoryDao.add(product);
 
 		final Optional<Product> optionalProduct = productRepositoryDao.findByName(PRODUCT_NAME);
@@ -104,9 +99,7 @@ public class ProductRepositoryTest {
 	@Test
 	public void testDeleteByID() {
 		Product product = createProduct();
-
 		productRepositoryDao.add(product);
-
 
 		productRepositoryDao.deleteById(product.getId());
 
@@ -115,11 +108,13 @@ public class ProductRepositoryTest {
 	}
 
 	private Product createProduct() {
+		Category category = new Category();
+		category.setName("CLOTHES");
 		Product product = new Product();
 		product.setName(PRODUCT_NAME);
 		product.setBrand("Toy brand");
 		product.setDescription("Toy description");
-		product.setCategory(Category.CLOTHES);
+		product.setCategory(category);
 		product.setPrice(100);
 		product.setCreated(LocalDate.parse("2023-10-10"));
 		product.setAvailable(true);

@@ -1,6 +1,5 @@
 package com.onlinestore.main.repository;
 
-import com.onlinestore.main.domain.entity.OrderStatus;
 import com.onlinestore.main.domain.entity.Product;
 
 import java.util.List;
