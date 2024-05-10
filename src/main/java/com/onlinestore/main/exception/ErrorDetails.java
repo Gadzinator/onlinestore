@@ -1,4 +1,4 @@
-package com.onlinestore.main.excepiton;
+package com.onlinestore.main.exception;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

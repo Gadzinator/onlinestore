@@ -1,4 +1,4 @@
-package com.onlinestore.main.excepiton;
+package com.onlinestore.main.exception;
 
 public class ProductNotFoundException extends RuntimeException {
 

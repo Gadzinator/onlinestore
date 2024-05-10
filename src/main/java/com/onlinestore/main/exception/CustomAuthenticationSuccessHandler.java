@@ -1,4 +1,4 @@
-package com.onlinestore.main.excepiton;
+package com.onlinestore.main.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

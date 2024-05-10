@@ -1,4 +1,4 @@
-package com.onlinestore.main.dao;
+package com.onlinestore.main.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
