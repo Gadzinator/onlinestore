@@ -3,9 +3,9 @@ package com.onlinestore.main.service.impl;
 import com.onlinestore.main.domain.dto.RegistrationUserDto;
 import com.onlinestore.main.domain.dto.UserDto;
 import com.onlinestore.main.domain.entity.User;
-import com.onlinestore.main.excepiton.PasswordMismatchException;
-import com.onlinestore.main.excepiton.UserNotFoundException;
-import com.onlinestore.main.excepiton.UsernameNotUniqueException;
+import com.onlinestore.main.exception.PasswordMismatchException;
+import com.onlinestore.main.exception.UserNotFoundException;
+import com.onlinestore.main.exception.UsernameNotUniqueException;
 import com.onlinestore.main.mapper.IUserMapperImpl;
 import com.onlinestore.main.repository.impl.UserRepository;
 import com.onlinestore.main.service.impl.config.ServiceTestConfiguration;
@@ -16,11 +16,14 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +50,10 @@ public class UserServiceTest {
 	private static final String PASSWORD = "Alex";
 
 	private static final long USER_ID = 1;
+
+	private static final int PAGE_NUMBER = 0;
+
+	private static final int PAGE_SIZE = 10;
 
 	@Mock
 	private UserRepository userRepository;
@@ -174,27 +181,31 @@ public class UserServiceTest {
 		final UserDto secondUserDto = createUserDto();
 		secondUserDto.setId(2);
 
-		when(userRepository.findAll()).thenReturn(users);
+		when(userRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(users));
 		when(userMapper.mapToUserDto(firstUser)).thenReturn(firstUserDto);
 		when(userMapper.mapToUserDto(secondUser)).thenReturn(secondUserDto);
 
-		final List<UserDto> actualeUserDtoList = userService.findAll();
+		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
+		final Page<UserDto> actualUserDtoList = userService.findAll(pageable);
 
-		verify(userRepository).findAll();
+		verify(userRepository).findAll(any(Pageable.class));
 		verify(userMapper).mapToUserDto(firstUser);
 		verify(userMapper).mapToUserDto(secondUser);
 
-		assertFalse(actualeUserDtoList.isEmpty());
-		assertEquals(2, actualeUserDtoList.size());
-		assertTrue(actualeUserDtoList.contains(firstUserDto));
-		assertTrue(actualeUserDtoList.contains(secondUserDto));
+
+		assertFalse(actualUserDtoList.isEmpty());
+		assertEquals(2, actualUserDtoList.getSize());
+		assertTrue(actualUserDtoList.getContent().contains(firstUserDto));
+		assertTrue(actualUserDtoList.getContent().contains(secondUserDto));
 	}
 
 	@Test
 	public void testFindAllWhenNotUsersExist() {
-		when(userRepository.findAll()).thenReturn(Collections.emptyList());
+		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
 
-		assertThrows(UserNotFoundException.class, () -> userService.findAll());
+		when(userRepository.findAll(any(Pageable.class))).thenReturn(Page.empty());
+
+		assertThrows(UserNotFoundException.class, () -> userService.findAll(pageable));
 	}
 
 	@Test

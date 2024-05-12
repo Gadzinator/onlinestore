@@ -1,6 +1,6 @@
 package com.onlinestore.main.repository.impl;
 
-import com.onlinestore.main.dao.AbstractDao;
+import com.onlinestore.main.repository.AbstractDao;
 import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.domain.entity.Product_;
 import com.onlinestore.main.repository.IProductRepository;

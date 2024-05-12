@@ -6,7 +6,7 @@ import com.onlinestore.main.domain.entity.Category;
 import com.onlinestore.main.domain.entity.Order;
 import com.onlinestore.main.domain.entity.OrderStatus;
 import com.onlinestore.main.domain.entity.Product;
-import com.onlinestore.main.excepiton.OrderNotFoundException;
+import com.onlinestore.main.exception.OrderNotFoundException;
 import com.onlinestore.main.mapper.IOrderMapperImpl;
 import com.onlinestore.main.repository.impl.OrderRepository;
 import com.onlinestore.main.service.impl.config.ServiceTestConfiguration;
@@ -16,11 +16,14 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,6 +47,10 @@ public class OrderServiceTest {
 	private static final long ORDER_ID = 1;
 
 	private static final long PRODUCT_ID = 1;
+
+	private static final int PAGE_NUMBER = 0;
+
+	private static final int PAGE_SIZE = 10;
 
 	@Mock
 	private OrderRepository orderRepository;
@@ -116,27 +123,30 @@ public class OrderServiceTest {
 		orderList.add(firstOrder);
 		orderList.add(secondOrder);
 
-		when(orderRepository.findAll()).thenReturn(orderList);
+		when(orderRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(orderList));
 		when(orderMapper.mapToOrderDto(firstOrder)).thenReturn(firstOrderDto);
 		when(orderMapper.mapToOrderDto(secondOrder)).thenReturn(secondOrderDto);
 
-		final List<OrderDto> actualeOrderDtoList = orderService.findAll();
+		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
+		final Page<OrderDto> actualOrderDtoList = orderService.findAll(pageable);
 
-		verify(orderRepository).findAll();
+		verify(orderRepository).findAll(any(Pageable.class));
 		verify(orderMapper, times(1)).mapToOrderDto(firstOrder);
 		verify(orderMapper, times(1)).mapToOrderDto(secondOrder);
 
-		assertFalse(actualeOrderDtoList.isEmpty());
-		assertEquals(2, actualeOrderDtoList.size());
-		assertTrue(actualeOrderDtoList.contains(firstOrderDto));
-		assertTrue(actualeOrderDtoList.contains(secondOrderDto));
+		assertFalse(actualOrderDtoList.isEmpty());
+		assertEquals(2, actualOrderDtoList.getSize());
+		assertTrue(actualOrderDtoList.getContent().contains(firstOrderDto));
+		assertTrue(actualOrderDtoList.getContent().contains(secondOrderDto));
 	}
 
 	@Test
 	public void testFindAllWhenOrdersNotExist() {
-		when(orderRepository.findAll()).thenReturn(Collections.emptyList());
+		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
 
-		assertThrows(OrderNotFoundException.class, () -> orderService.findAll());
+		when(orderRepository.findAll(any(Pageable.class))).thenReturn(Page.empty());
+
+		assertThrows(OrderNotFoundException.class, () -> orderService.findAll(pageable));
 	}
 
 	@Test
@@ -154,7 +164,7 @@ public class OrderServiceTest {
 		when(orderMapper.mapToOrder(any(OrderDto.class))).thenReturn(order);
 		doNothing().when(orderRepository).update(any(Order.class));
 
-		orderService.updateById(orderDto);
+		orderService.update(orderDto);
 
 		final ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(Order.class);
 
@@ -172,7 +182,7 @@ public class OrderServiceTest {
 		OrderDto orderDtoUpdate = createOrderDto(productDto);
 		when(orderRepository.findById(orderDtoUpdate.getId())).thenReturn(Optional.empty());
 
-		assertThrows(OrderNotFoundException.class, () -> orderService.updateById(orderDtoUpdate));
+		assertThrows(OrderNotFoundException.class, () -> orderService.update(orderDtoUpdate));
 		verify(orderRepository, times(1)).findById(orderDtoUpdate.getId());
 		verify(orderRepository, never()).update(any());
 	}
@@ -217,7 +227,7 @@ public class OrderServiceTest {
 		when(orderMapper.mapToOrderDto(order)).thenReturn(orderDto);
 		when(orderRepository.findProductsOrderId(ORDER_ID)).thenReturn(List.of(product));
 
-		final List<Product> foundProductList = orderService.findProductsOrderId(ORDER_ID);
+		final List<Product> foundProductList = orderService.findProductsByOrderId(ORDER_ID);
 
 		assertEquals(productList.size(), foundProductList.size());
 		assertEquals(productList, foundProductList);
@@ -225,7 +235,7 @@ public class OrderServiceTest {
 
 	@Test
 	public void testFindProductsOrderIdWhenOrderNotExist() {
-		assertThrows(OrderNotFoundException.class, () -> orderService.findProductsOrderId(ORDER_ID));
+		assertThrows(OrderNotFoundException.class, () -> orderService.findProductsByOrderId(ORDER_ID));
 	}
 
 	private Order createOrder(Product product) {

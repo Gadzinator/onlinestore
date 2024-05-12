@@ -1,6 +1,6 @@
 package com.onlinestore.main.repository.impl;
 
-import com.onlinestore.main.dao.AbstractDao;
+import com.onlinestore.main.repository.AbstractDao;
 import com.onlinestore.main.domain.entity.User;
 import com.onlinestore.main.repository.IUserRepository;
 import jakarta.persistence.EntityGraph;

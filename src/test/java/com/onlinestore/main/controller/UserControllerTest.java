@@ -6,7 +6,7 @@ import com.onlinestore.main.config.LiquibaseConfig;
 import com.onlinestore.main.controller.config.WebMvcConfig;
 import com.onlinestore.main.domain.dto.RegistrationUserDto;
 import com.onlinestore.main.domain.dto.UserDto;
-import com.onlinestore.main.excepiton.UserNotFoundException;
+import com.onlinestore.main.exception.UserNotFoundException;
 import com.onlinestore.main.security.WebSecurityConfig;
 import com.onlinestore.main.service.IUserService;
 import org.junit.Before;
@@ -94,14 +94,14 @@ public class UserControllerTest {
 	public void testFindByIdWhenStatusUserNotFoundException() throws Exception {
 		mockMvc.perform(get("/users/id/{id}", NOT_FIND_USER_ID))
 				.andExpect(status().isNotFound())
-				.andExpect(result -> assertEquals("User was not found with id " + NOT_FIND_USER_ID,
+				.andExpect(result -> assertEquals("User was not found by id " + NOT_FIND_USER_ID,
 						Objects.requireNonNull(result.getResolvedException()).getMessage()));
 	}
 
 	@Test
 	@WithMockUser(username = "Alex", roles = "ADMIN")
 	public void testFindAllWhenHttpStatusOk() throws Exception {
-		mockMvc.perform(get("/users"))
+		mockMvc.perform(get("/users/0/10"))
 				.andExpect(status().isOk());
 	}
 
@@ -122,7 +122,7 @@ public class UserControllerTest {
 		mockMvc.perform(get("/users/name/{name}", "Petro"))
 				.andExpect(status().isNotFound())
 				.andExpect(result -> assertInstanceOf(UserNotFoundException.class, result.getResolvedException()))
-				.andExpect(result -> assertEquals("User was not found with name " + "Petro",
+				.andExpect(result -> assertEquals("User was not found by name " + "Petro",
 						Objects.requireNonNull(result.getResolvedException()).getMessage()));
 	}
 

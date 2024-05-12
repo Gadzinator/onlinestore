@@ -1,8 +1,9 @@
 package com.onlinestore.main.repository.impl;
 
-import com.onlinestore.main.dao.AbstractDao;
+
 import com.onlinestore.main.domain.entity.Category;
 import com.onlinestore.main.domain.entity.Category_;
+import com.onlinestore.main.repository.AbstractDao;
 import com.onlinestore.main.repository.ICategoryRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;

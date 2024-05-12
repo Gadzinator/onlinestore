@@ -90,7 +90,7 @@ public class AuthControllerTest {
 
 	@Test
 	@WithAnonymousUser
-	public void testCreateAuthTokenWhenTokenHttpStatusIsUnauthorized() throws Exception {
+	public void testCreateAuthTokenWhenTokenHttpStatusIsNotFoundUser() throws Exception {
 		JwtRequest authRequest = new JwtRequest();
 		authRequest.setUserName("username");
 		authRequest.setPassword("password");
@@ -99,7 +99,7 @@ public class AuthControllerTest {
 		mockMvc.perform(post("/auth")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(authRequest)))
-				.andExpect(status().isUnauthorized());
+				.andExpect(status().isNotFound());
 	}
 
 	@Test

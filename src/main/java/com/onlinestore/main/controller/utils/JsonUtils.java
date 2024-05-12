@@ -2,7 +2,7 @@ package com.onlinestore.main.controller.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.onlinestore.main.excepiton.JsonConversionException;
+import com.onlinestore.main.exception.JsonConversionException;
 
 
 public class JsonUtils {

@@ -6,7 +6,7 @@ import com.onlinestore.main.config.LiquibaseConfig;
 import com.onlinestore.main.controller.config.WebMvcConfig;
 import com.onlinestore.main.domain.dto.CategoryDto;
 import com.onlinestore.main.domain.dto.ProductDto;
-import com.onlinestore.main.excepiton.ProductNotFoundException;
+import com.onlinestore.main.exception.ProductNotFoundException;
 import com.onlinestore.main.security.WebSecurityConfig;
 import com.onlinestore.main.service.IProductService;
 import org.junit.Before;
@@ -96,7 +96,7 @@ public class ProductControllerTest {
 	public void findAllWhenHttpStatusOk() throws Exception {
 		final ProductDto productDto = createProductDto();
 		productService.add(productDto);
-		mockMvc.perform(get("/products"))
+		mockMvc.perform(get("/products/0/10"))
 				.andExpect(status().isOk());
 	}
 
@@ -106,7 +106,7 @@ public class ProductControllerTest {
 		productService.add(productDto);
 		mockMvc.perform(get("/products/id/{id}", NOT_FOUND_PRODUCT_ID))
 				.andExpect(status().isNotFound())
-				.andExpect(result -> assertEquals("Product not was found with id " + NOT_FOUND_PRODUCT_ID,
+				.andExpect(result -> assertEquals("Product not was found by id " + NOT_FOUND_PRODUCT_ID,
 						Objects.requireNonNull(result.getResolvedException()).getMessage()));
 	}
 
@@ -152,7 +152,7 @@ public class ProductControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(productDto)))
 				.andExpect(status().isNotFound())
-				.andExpect(result -> assertEquals("Product not was found with id " + 100,
+				.andExpect(result -> assertEquals("Product not was found by id " + 100,
 						Objects.requireNonNull(result.getResolvedException()).getMessage()));
 	}
 
@@ -173,7 +173,7 @@ public class ProductControllerTest {
 		mockMvc.perform(delete("/products/{id}", NOT_FOUND_PRODUCT_ID))
 				.andExpect(status().isNotFound())
 				.andExpect(result -> assertInstanceOf(ProductNotFoundException.class, result.getResolvedException()))
-				.andExpect(result -> assertEquals("Product not was found with id " + NOT_FOUND_PRODUCT_ID,
+				.andExpect(result -> assertEquals("Product not was found by id " + NOT_FOUND_PRODUCT_ID,
 						Objects.requireNonNull(result.getResolvedException()).getMessage()));
 	}
 

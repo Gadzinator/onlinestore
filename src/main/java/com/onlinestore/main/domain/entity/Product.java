@@ -46,4 +46,19 @@ public class Product {
 
 	@Column(name = "received")
 	private LocalDate received;
+
+	@Override
+	public String toString() {
+		return "Product{" +
+				"id=" + id +
+				", name='" + name + '\'' +
+				", brand='" + brand + '\'' +
+				", description='" + description + '\'' +
+				", category=" + (category != null ? category.getName() : "null") +
+				", price=" + price +
+				", created=" + created +
+				", isAvailable=" + isAvailable +
+				", received=" + received +
+				'}';
+	}
 }

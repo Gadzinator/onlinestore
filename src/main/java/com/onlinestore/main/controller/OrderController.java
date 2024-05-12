@@ -4,6 +4,9 @@ import com.onlinestore.main.domain.dto.OrderDto;
 import com.onlinestore.main.service.IOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -40,14 +43,17 @@ public class OrderController {
 		return new ResponseEntity<>(orderService.findById(id), HttpStatus.OK);
 	}
 
-	@GetMapping
-	public ResponseEntity<List<OrderDto>> findAll() {
-		return new ResponseEntity<>(orderService.findAll(), HttpStatus.OK);
+	@GetMapping("/{page}/{size}")
+	public ResponseEntity<List<OrderDto>> findAll(@PathVariable("page") int page, @PathVariable("size") int size) {
+		final Pageable pageable = PageRequest.of(page, size);
+		Page<OrderDto> ordersPage = orderService.findAll(pageable);
+
+		return new ResponseEntity<>(ordersPage.getContent(), HttpStatus.OK);
 	}
 
 	@PutMapping
 	public ResponseEntity<?> update(@RequestBody OrderDto orderDtoUpdate) {
-		orderService.updateById(orderDtoUpdate);
+		orderService.update(orderDtoUpdate);
 
 		return new ResponseEntity<>(orderDtoUpdate, HttpStatus.OK);
 	}

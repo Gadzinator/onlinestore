@@ -1,9 +1,10 @@
 package com.onlinestore.main.repository.impl;
 
-import com.onlinestore.main.dao.AbstractDao;
+
 import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.domain.entity.WaitingList;
 import com.onlinestore.main.domain.entity.WaitingList_;
+import com.onlinestore.main.repository.AbstractDao;
 import com.onlinestore.main.repository.IWaitingListRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;

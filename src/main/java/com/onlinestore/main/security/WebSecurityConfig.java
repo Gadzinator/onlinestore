@@ -1,9 +1,9 @@
 package com.onlinestore.main.security;
 
-import com.onlinestore.main.excepiton.CustomAccessDeniedHandler;
-import com.onlinestore.main.excepiton.CustomAuthenticationEntryPoint;
-import com.onlinestore.main.excepiton.CustomAuthenticationFailureHandler;
-import com.onlinestore.main.excepiton.CustomAuthenticationSuccessHandler;
+import com.onlinestore.main.exception.CustomAccessDeniedHandler;
+import com.onlinestore.main.exception.CustomAuthenticationEntryPoint;
+import com.onlinestore.main.exception.CustomAuthenticationFailureHandler;
+import com.onlinestore.main.exception.CustomAuthenticationSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -44,9 +44,9 @@ public class WebSecurityConfig implements WebMvcConfigurer {
 						.requestMatchers("/users/**").hasRole(ROLE_ADMIN)
 						.requestMatchers(HttpMethod.DELETE, "/**").hasRole(ROLE_ADMIN)
 						.requestMatchers(HttpMethod.PUT, "/**").hasRole(ROLE_ADMIN)
-						.requestMatchers(HttpMethod.GET, "/orders").authenticated()
+						.requestMatchers(HttpMethod.GET, "/orders/**").authenticated()
 						.requestMatchers("/admins/**").hasRole((ROLE_ADMIN))
-						.requestMatchers(HttpMethod.POST, "/waitingLists/**", "/orders/**", "/changePassword", "/auth").authenticated()
+						.requestMatchers(HttpMethod.POST, "/waitingLists/**", "/orders/**", "/changePassword").authenticated()
 						.anyRequest().permitAll())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.formLogin(form -> form.failureHandler(authenticationFailureHandler()))

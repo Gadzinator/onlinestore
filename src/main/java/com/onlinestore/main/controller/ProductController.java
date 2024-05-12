@@ -3,6 +3,9 @@ package com.onlinestore.main.controller;
 import com.onlinestore.main.domain.dto.ProductDto;
 import com.onlinestore.main.service.IProductService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,9 +40,12 @@ public class ProductController {
 		return new ResponseEntity<>("Product add", HttpStatus.CREATED);
 	}
 
-	@GetMapping
-	public ResponseEntity<List<ProductDto>> findAll() {
-		return new ResponseEntity<>(productService.findAll(), HttpStatus.OK);
+	@GetMapping("/{page}/{size}")
+	public ResponseEntity<List<ProductDto>> findAll(@PathVariable("page") int page, @PathVariable("size") int size) {
+		final Pageable pageable = PageRequest.of(page, size);
+		Page<ProductDto> productsPage = productService.findAll(pageable);
+
+		return new ResponseEntity<>(productsPage.getContent(), HttpStatus.OK);
 	}
 
 	@GetMapping("/id/{id}")

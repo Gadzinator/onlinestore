@@ -5,13 +5,16 @@ import com.onlinestore.main.domain.dto.RegistrationUserDto;
 import com.onlinestore.main.domain.dto.UserDto;
 import com.onlinestore.main.domain.entity.Role;
 import com.onlinestore.main.domain.entity.User;
-import com.onlinestore.main.excepiton.PasswordMismatchException;
-import com.onlinestore.main.excepiton.UserNotFoundException;
-import com.onlinestore.main.excepiton.UsernameNotUniqueException;
+import com.onlinestore.main.exception.PasswordMismatchException;
+import com.onlinestore.main.exception.UserNotFoundException;
+import com.onlinestore.main.exception.UsernameNotUniqueException;
 import com.onlinestore.main.mapper.IUserMapper;
 import com.onlinestore.main.repository.impl.UserRepository;
 import com.onlinestore.main.service.IUserService;
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Service
+@Log4j2
 @AllArgsConstructor
+@Service
 public class UserService implements IUserService {
 
 	private UserRepository userRepository;
@@ -33,6 +37,8 @@ public class UserService implements IUserService {
 	@Transactional
 	@Override
 	public UserDto createNewUser(RegistrationUserDto registrationUserDto) {
+		log.info("Starting creating new user: " + registrationUserDto);
+
 		validateUsernameIsUnique(registrationUserDto.getName());
 		validatePasswordMatch(registrationUserDto.getPassword(), registrationUserDto.getConfirmPassword());
 		validateEmailIsUnique(registrationUserDto.getEmail());
@@ -40,37 +46,49 @@ public class UserService implements IUserService {
 		User user = createUserFromRegistrationUserDto(registrationUserDto);
 		userRepository.add(user);
 
+		log.info("Finished creating user: " + user);
+
 		return userMapper.mapToUserDto(user);
 	}
 
 	@Override
 	public UserDto findById(long id) {
-		return userRepository.findById(id)
+		log.info("Starting finding user by id: " + id);
+
+		final UserDto userDto = userRepository.findById(id)
 				.map(user -> userMapper.mapToUserDto(user))
-				.orElseThrow(() -> new UserNotFoundException("User was not found with id " + id));
+				.orElseThrow(() -> new UserNotFoundException("User was not found by id " + id));
+
+		log.info("Finished finding user by id: " + userDto);
+
+		return userDto;
 	}
 
 	@Override
 	public UserDto findByName(String name) {
-		return userRepository.findByName(name)
+		log.info("Starting finding user by name: " + name);
+
+		final UserDto userDto = userRepository.findByName(name)
 				.map(user -> userMapper.mapToUserDto(user))
-				.orElseThrow(() -> new UserNotFoundException("User was not found with name " + name));
+				.orElseThrow(() -> new UserNotFoundException("User was not found by name " + name));
+
+		log.info("Finished finding user by name: " + userDto);
+
+		return userDto;
 	}
 
+	@Transactional
 	@Override
-	public List<UserDto> findAll() {
-		List<UserDto> userDtoList = new ArrayList<>();
-		final List<User> userList = userRepository.findAll();
-		if (!userList.isEmpty()) {
-			for (User user : userList) {
-				final UserDto userDto = userMapper.mapToUserDto(user);
-				userDtoList.add(userDto);
-			}
-		} else {
+	public Page<UserDto> findAll(Pageable pageable) {
+		log.info("Start finding all users:");
+		Page<User> usersPage = userRepository.findAll(pageable);
+		if (usersPage.isEmpty()) {
 			throw new UserNotFoundException("Users were not found");
 		}
 
-		return userDtoList;
+		log.info("Finished finding all users: " + usersPage);
+
+		return usersPage.map(userMapper::mapToUserDto);
 	}
 
 	@Transactional
@@ -84,30 +102,49 @@ public class UserService implements IUserService {
 	@Override
 	@Transactional
 	public void changePassword(String userName, PasswordChangeRequest passwordChangeRequest) {
+		log.info("Starting change password for user: " + userName);
+
 		String enteredPassword = passwordChangeRequest.getOldPassword();
 		final User user = userRepository.findByName(userName)
-				.orElseThrow(() -> new UserNotFoundException("User was not found with name " + userName));
+				.orElseThrow(() -> new UserNotFoundException("User was not found by name " + userName));
 
 		String storedPassword = user.getPassword();
 
 		if (!passwordEncoder.matches(enteredPassword, storedPassword)) {
+
+			log.error("Password change failed: Passwords do not match for user: " + userName);
+
 			throw new PasswordMismatchException("Passwords do not match");
 		}
 		user.setPassword(passwordEncoder.encode(passwordChangeRequest.getNewPassword()));
 		userRepository.add(user);
+
+		log.info("Finished password changed successfully for user: " + userName);
 	}
 
 	private void validatePasswordMatch(String password, String confirmPassword) {
+		log.info("Starting validating password match: " + password + ", and " + confirmPassword);
+
 		if (!password.equals(confirmPassword)) {
+
+			log.error("Passwords do not match");
+
 			throw new PasswordMismatchException("Passwords do not match");
 		}
+		log.info("Finished validating password math");
 	}
 
 	private void validateUsernameIsUnique(String name) {
+		log.info("Starting validating email uniqueness");
+
 		final Optional<User> optionalUser = userRepository.findByName(name);
 		if (optionalUser.isPresent()) {
+
+			log.error("User with name " + name + " already exists");
+
 			throw new UsernameNotUniqueException("User with name " + name + " already exists");
 		}
+		log.info("Finished validating email uniqueness");
 	}
 
 	private void validateEmailIsUnique(String email) {
@@ -118,11 +155,15 @@ public class UserService implements IUserService {
 	}
 
 	private User createUserFromRegistrationUserDto(RegistrationUserDto registrationUserDto) {
+		log.info("Starting creating user from registration user: " + registrationUserDto);
 		User user = new User();
 		user.setName(registrationUserDto.getName());
 		user.setPassword(passwordEncoder.encode(registrationUserDto.getPassword()));
 		user.setEmail(registrationUserDto.getEmail());
 		user.setRole(Role.ROLE_USER);
+
+		log.info("Finished creating user from registration user: " + user);
+
 
 		return user;
 	}

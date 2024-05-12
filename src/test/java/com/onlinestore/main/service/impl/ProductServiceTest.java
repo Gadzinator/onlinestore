@@ -4,7 +4,7 @@ import com.onlinestore.main.domain.dto.CategoryDto;
 import com.onlinestore.main.domain.dto.ProductDto;
 import com.onlinestore.main.domain.entity.Category;
 import com.onlinestore.main.domain.entity.Product;
-import com.onlinestore.main.excepiton.ProductNotFoundException;
+import com.onlinestore.main.exception.ProductNotFoundException;
 import com.onlinestore.main.mapper.IProductMapperImpl;
 import com.onlinestore.main.repository.impl.CategoryRepository;
 import com.onlinestore.main.repository.impl.ProductRepository;
@@ -16,11 +16,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,6 +45,10 @@ public class ProductServiceTest {
 	private static final String PRODUCT_NAME = "Toy name";
 
 	private static final long PRODUCT_ID = 1;
+
+	private static final int PAGE_NUMBER = 0;
+
+	private static final int PAGE_SIZE = 10;
 
 	@Mock
 	private ProductRepository productRepository;
@@ -113,27 +120,31 @@ public class ProductServiceTest {
 		final ProductDto secondProductDto = createProductDto();
 		secondProductDto.setId(2);
 
-		when(productRepository.findAll()).thenReturn(products);
+		when(productRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(products));
 		when(productMapper.mapToProductDto(firstProduct)).thenReturn(firstProductDto);
 		when(productMapper.mapToProductDto(secondProduct)).thenReturn(secondProductDto);
 
-		final List<ProductDto> actualeProductDtoList = productService.findAll();
+		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
+		final Page<ProductDto> actualProductDtoList = productService.findAll(pageable);
 
-		verify(productRepository).findAll();
+		verify(productRepository).findAll(any(Pageable.class));
 		verify(productMapper).mapToProductDto(firstProduct);
 		verify(productMapper).mapToProductDto(secondProduct);
 
-		assertFalse(actualeProductDtoList.isEmpty());
-		assertEquals(2, actualeProductDtoList.size());
-		assertTrue(actualeProductDtoList.contains(firstProductDto));
-		assertTrue(actualeProductDtoList.contains(secondProductDto));
+
+		assertFalse(actualProductDtoList.isEmpty());
+		assertEquals(2, actualProductDtoList.getSize());
+		assertTrue(actualProductDtoList.getContent().contains(firstProductDto));
+		assertTrue(actualProductDtoList.getContent().contains(secondProductDto));
 	}
 
 	@Test
 	public void testFindAllWhenProductsNotExist() {
-		when(productRepository.findAll()).thenReturn(Collections.emptyList());
+		when(productRepository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
-		assertThrows(ProductNotFoundException.class, () -> productService.findAll());
+		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
+
+		assertThrows(ProductNotFoundException.class, () -> productService.findAll(pageable));
 	}
 
 	@Test

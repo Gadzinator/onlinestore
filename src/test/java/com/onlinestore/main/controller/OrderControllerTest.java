@@ -8,7 +8,7 @@ import com.onlinestore.main.domain.dto.OrderDto;
 import com.onlinestore.main.domain.dto.ProductDto;
 import com.onlinestore.main.domain.dto.RegistrationUserDto;
 import com.onlinestore.main.domain.entity.OrderStatus;
-import com.onlinestore.main.excepiton.OrderNotFoundException;
+import com.onlinestore.main.exception.OrderNotFoundException;
 import com.onlinestore.main.security.WebSecurityConfig;
 import com.onlinestore.main.service.IOrderService;
 import com.onlinestore.main.service.IProductService;
@@ -112,21 +112,21 @@ public class OrderControllerTest {
 	public void findByIdWhenStatusOrderNotFoundException() throws Exception {
 		mockMvc.perform(get("/orders/id/{id}", NOT_FOUND_ORDER_ID)
 						.with(user("Alex")))
-				.andExpect(result -> assertEquals("Order not was found with id " + NOT_FOUND_ORDER_ID,
+				.andExpect(result -> assertEquals("Order not was found by id " + NOT_FOUND_ORDER_ID,
 						Objects.requireNonNull(result.getResolvedException()).getMessage()));
 	}
 
 	@Test
 	@WithUserDetails(value = "Alex", setupBefore = TestExecutionEvent.TEST_EXECUTION, userDetailsServiceBeanName = "authService")
 	public void findAllWhenHttpStatusOk() throws Exception {
-		mockMvc.perform(get("/orders"))
+		mockMvc.perform(get("/orders/0/10"))
 				.andExpect(status().isOk());
 	}
 
 	@Test
 	@WithAnonymousUser
 	public void findAllWhenNotAuthenticatedThenHttpStatusUnauthorized() throws Exception {
-		mockMvc.perform(get("/orders"))
+		mockMvc.perform(get("/orders/0/10"))
 				.andExpect(status().isUnauthorized());
 	}
 
@@ -153,7 +153,7 @@ public class OrderControllerTest {
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(orderDto)))
 				.andExpect(status().isNotFound())
-				.andExpect(result -> assertEquals("Order not was found with id " + orderDto.getId(),
+				.andExpect(result -> assertEquals("Order not was found by id " + orderDto.getId(),
 						Objects.requireNonNull(result.getResolvedException()).getMessage()));
 	}
 
@@ -170,7 +170,7 @@ public class OrderControllerTest {
 		mockMvc.perform(delete("/orders/{id}", NOT_FOUND_ORDER_ID))
 				.andExpect(status().isNotFound())
 				.andExpect(result -> assertInstanceOf(OrderNotFoundException.class, result.getResolvedException()))
-				.andExpect(result -> assertEquals("Order not was found with id " + NOT_FOUND_ORDER_ID,
+				.andExpect(result -> assertEquals("Order not was found by id " + NOT_FOUND_ORDER_ID,
 						Objects.requireNonNull(result.getResolvedException()).getMessage()));
 	}
 
