@@ -35,7 +35,7 @@ public class UserRepositoryTest {
 	public void testAdd() {
 		User user = createUser();
 
-		userRepositoryDao.add(user);
+		userRepositoryDao.save(user);
 
 		final Optional<User> optionalUser = userRepositoryDao.findById(user.getId());
 
@@ -48,8 +48,8 @@ public class UserRepositoryTest {
 	public void testFindAll() {
 		User user = createUser();
 		User user1 = createUser();
-		userRepositoryDao.add(user);
-		userRepositoryDao.add(user1);
+		userRepositoryDao.save(user);
+		userRepositoryDao.save(user1);
 
 		List<User> userList = userRepositoryDao.findAll();
 
@@ -60,7 +60,7 @@ public class UserRepositoryTest {
 	public void testUpdate() {
 		User user = createUser();
 
-		userRepositoryDao.add(user);
+		userRepositoryDao.save(user);
 
 		user.setName(UPDATE_USER_NAME);
 
@@ -75,7 +75,7 @@ public class UserRepositoryTest {
 	public void testDeleteById() {
 		User user = createUser();
 
-		userRepositoryDao.add(user);
+		userRepositoryDao.save(user);
 
 		userRepositoryDao.deleteById(user.getId());
 
@@ -87,7 +87,7 @@ public class UserRepositoryTest {
 	public void testFindById() {
 		User user = createUser();
 
-		userRepositoryDao.add(user);
+		userRepositoryDao.save(user);
 
 		Optional<User> optionalUser = userRepositoryDao.findById(user.getId());
 
@@ -99,7 +99,7 @@ public class UserRepositoryTest {
 	public void findByName() {
 		User user = createUser();
 
-		userRepositoryDao.add(user);
+		userRepositoryDao.save(user);
 
 		Optional<User> optionalUser = userRepositoryDao.findByName(USER_NAME);
 

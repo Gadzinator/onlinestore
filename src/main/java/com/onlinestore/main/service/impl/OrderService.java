@@ -34,7 +34,7 @@ public class OrderService implements IOrderService {
 			throw new NullPointerException("ProductDto cannot be null");
 		}
 
-		orderRepository.add(orderMapper.mapToOrder(orderDto));
+		orderRepository.save(orderMapper.mapToOrder(orderDto));
 
 		log.info("Finishing adding an order " + orderDto);
 	}

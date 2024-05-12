@@ -69,12 +69,12 @@ public class OrderServiceTest {
 		Order order = createOrder(product);
 
 		when(orderMapper.mapToOrder(orderDto)).thenReturn(order);
-		doNothing().when(orderRepository).add(order);
+		doNothing().when(orderRepository).save(order);
 
 		orderService.add(orderDto);
 
 		verify(orderMapper).mapToOrder(orderDto);
-		verify(orderRepository).add(order);
+		verify(orderRepository).save(order);
 
 		assertEquals(order.getId(), orderDto.getId());
 	}

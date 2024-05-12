@@ -71,13 +71,13 @@ public class ProductServiceTest {
 
 		when(productMapper.mapToProduct(any(ProductDto.class))).thenReturn(product);
 		when(categoryRepository.findByName(productDto.getCategory())).thenReturn(Optional.of(category));
-		doNothing().when(productRepository).add(product);
+		doNothing().when(productRepository).save(product);
 
 		productService.add(productDto);
 
 		verify(productMapper).mapToProduct(productDto);
 		verify(categoryRepository).findByName(productDto.getCategory());
-		verify(productRepository).add(product);
+		verify(productRepository).save(product);
 		assertEquals(product.getId(), productDto.getId());
 		assertEquals(product.getName(), productDto.getName());
 	}

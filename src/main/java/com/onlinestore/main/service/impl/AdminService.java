@@ -25,7 +25,7 @@ public class AdminService implements IAdminService {
 		final User user = userRepository.findByName(userName)
 				.orElseThrow(() -> new UsernameNotFoundException("There is no user with that name " + userName));
 		user.setRole(Role.valueOf(newRole));
-		userRepository.add(user);
+		userRepository.save(user);
 
 		log.info("Changed user role: " + user + " to role " + user.getRole());
 	}

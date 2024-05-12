@@ -35,7 +35,7 @@ public class CategoryRepositoryTest {
 		final Category category = createCategory();
 
 		// when
-		categoryRepository.add(category);
+		categoryRepository.save(category);
 
 		// then
 		final Category retrievedCategory = categoryRepository.findById(CATEGORY_ID).get();

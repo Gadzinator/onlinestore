@@ -19,8 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 @Log4j2
@@ -44,7 +42,7 @@ public class UserService implements IUserService {
 		validateEmailIsUnique(registrationUserDto.getEmail());
 
 		User user = createUserFromRegistrationUserDto(registrationUserDto);
-		userRepository.add(user);
+		userRepository.save(user);
 
 		log.info("Finished creating user: " + user);
 
@@ -117,7 +115,7 @@ public class UserService implements IUserService {
 			throw new PasswordMismatchException("Passwords do not match");
 		}
 		user.setPassword(passwordEncoder.encode(passwordChangeRequest.getNewPassword()));
-		userRepository.add(user);
+		userRepository.save(user);
 
 		log.info("Finished password changed successfully for user: " + userName);
 	}

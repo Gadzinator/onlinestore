@@ -40,7 +40,7 @@ public class OrderRepositoryTest {
 	public void testAdd() {
 		final Product product = createProduct();
 		final Order order = createOrder(product);
-		orderRepository.add(order);
+		orderRepository.save(order);
 
 		final Optional<Order> optionalOrder = orderRepository.findById(order.getId());
 
@@ -64,7 +64,7 @@ public class OrderRepositoryTest {
 		final Product product = createProduct();
 		final Order order = createOrder(product);
 
-		orderRepository.add(order);
+		orderRepository.save(order);
 
 		Optional<Order> optionalOrder = orderRepository.findById(order.getId());
 
@@ -83,8 +83,8 @@ public class OrderRepositoryTest {
 		Order order2 = new Order();
 		order2.setCreated(LocalDate.now());
 		order2.setOrderStatus(OrderStatus.READY);
-		orderRepository.add(order1);
-		orderRepository.add(order2);
+		orderRepository.save(order1);
+		orderRepository.save(order2);
 
 		List<Order> allOrders = orderRepository.findAll();
 
@@ -97,10 +97,10 @@ public class OrderRepositoryTest {
 	@Test
 	public void testUpdate() {
 		Product product = createProduct();
-		productRepository.add(product);
+		productRepository.save(product);
 
 		final Order order = createOrder(product);
-		orderRepository.add(order);
+		orderRepository.save(order);
 
 		order.setOrderStatus(OrderStatus.IN_PROGRESS);
 
@@ -114,7 +114,7 @@ public class OrderRepositoryTest {
 	@Test
 	public void testDeleteById() {
 		Product product = createProduct();
-		productRepository.add(product);
+		productRepository.save(product);
 		long productId = product.getId();
 
 		productRepository.deleteById(productId);

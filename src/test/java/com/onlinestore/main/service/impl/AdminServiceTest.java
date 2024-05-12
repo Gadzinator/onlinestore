@@ -65,7 +65,7 @@ public class AdminServiceTest {
 		assertEquals(Role.valueOf(newRole), existingUser.getRole());
 
 		verify(userRepository).findByName(userName);
-		verify(userRepository).add(existingUser);
+		verify(userRepository).save(existingUser);
 		verifyNoMoreInteractions(userRepository);
 	}
 

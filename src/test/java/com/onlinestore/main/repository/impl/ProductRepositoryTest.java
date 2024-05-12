@@ -32,7 +32,7 @@ public class ProductRepositoryTest {
 	@Test
 	public void testAdd() {
 		final Product product = createProduct();
-		productRepositoryDao.add(product);
+		productRepositoryDao.save(product);
 
 		final Optional<Product> optionalProduct = productRepositoryDao.findById(product.getId());
 
@@ -46,7 +46,7 @@ public class ProductRepositoryTest {
 	@Test
 	public void testFindById() {
 		Product product = createProduct();
-		productRepositoryDao.add(product);
+		productRepositoryDao.save(product);
 
 		final Optional<Product> optionalProduct = productRepositoryDao.findById(product.getId());
 
@@ -61,8 +61,8 @@ public class ProductRepositoryTest {
 	public void testFindAll() {
 		final Product product = createProduct();
 		final Product product1 = createProduct();
-		productRepositoryDao.add(product);
-		productRepositoryDao.add(product1);
+		productRepositoryDao.save(product);
+		productRepositoryDao.save(product1);
 
 		List<Product> productList = productRepositoryDao.findAll();
 
@@ -72,7 +72,7 @@ public class ProductRepositoryTest {
 	@Test
 	public void testUpdate() {
 		Product product = createProduct();
-		productRepositoryDao.add(product);
+		productRepositoryDao.save(product);
 
 		product.setName(UPDATE_PRODUCT_NAME);
 		productRepositoryDao.update(product);
@@ -87,7 +87,7 @@ public class ProductRepositoryTest {
 	@Test
 	public void testFindByName() {
 		Product product = createProduct();
-		productRepositoryDao.add(product);
+		productRepositoryDao.save(product);
 
 		final Optional<Product> optionalProduct = productRepositoryDao.findByName(PRODUCT_NAME);
 
@@ -99,7 +99,7 @@ public class ProductRepositoryTest {
 	@Test
 	public void testDeleteByID() {
 		Product product = createProduct();
-		productRepositoryDao.add(product);
+		productRepositoryDao.save(product);
 
 		productRepositoryDao.deleteById(product.getId());
 

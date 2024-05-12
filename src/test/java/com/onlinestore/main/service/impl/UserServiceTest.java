@@ -79,7 +79,7 @@ public class UserServiceTest {
 		when(userRepository.findUserByEmail(USER_EMAIL)).thenReturn(Optional.empty());
 		when(passwordEncoder.encode(anyString())).thenReturn(PASSWORD);
 
-		doNothing().when(userRepository).add(any(User.class));
+		doNothing().when(userRepository).save(any(User.class));
 		when(userMapper.mapToUserDto(any(User.class))).thenCallRealMethod();
 
 		userService.createNewUser(registrationUserDto);
@@ -87,7 +87,7 @@ public class UserServiceTest {
 		verify(userRepository).findByName(USER_NAME);
 		verify(userRepository).findUserByEmail(USER_EMAIL);
 		verify(passwordEncoder).encode(PASSWORD);
-		verify(userRepository).add(userArgumentCaptor.capture());
+		verify(userRepository).save(userArgumentCaptor.capture());
 		verify(userMapper).mapToUserDto(userArgumentCaptor.capture());
 
 		User savedUser = userArgumentCaptor.getValue();

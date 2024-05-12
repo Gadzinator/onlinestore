@@ -55,7 +55,7 @@ public class WaitingListService implements IWaitingListService {
 			log.info("New WaitingList created for product: " + productId + ", and user: " + username);
 		}
 
-		waitingListRepository.add(waitingList);
+		waitingListRepository.save(waitingList);
 
 		log.info("Finished waitingList added successfully: " + waitingList);
 	}

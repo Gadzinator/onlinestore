@@ -43,7 +43,7 @@ public class ProductService implements IProductService {
 
 		product.setCategory(category);
 
-		productRepository.add(product);
+		productRepository.save(product);
 
 		log.info("Finished adding product: " + productDto);
 	}
@@ -135,7 +135,7 @@ public class ProductService implements IProductService {
 
 		Category category = new Category();
 		category.setName(categoryName);
-		categoryRepository.add(category);
+		categoryRepository.save(category);
 
 		log.info("Finished new category added successfully: " + category);
 
