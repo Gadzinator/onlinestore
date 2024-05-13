@@ -1,7 +1,7 @@
 package com.onlinestore.main.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -24,8 +24,9 @@ public class Category {
 	private long id;
 
 	@JsonIgnore
-	@OneToMany(fetch = FetchType.LAZY, mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.LAZY, mappedBy = "category", orphanRemoval = true)
 	private List<Product> products;
 
+	@Column(name = "name", nullable = false, length = 50)
 	private String name;
 }

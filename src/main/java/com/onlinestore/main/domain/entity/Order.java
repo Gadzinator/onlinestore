@@ -31,7 +31,7 @@ public class Order {
 	@JoinColumn(name = "user_id", referencedColumnName = "id")
 	private User user;
 
-	@Column(name = "created")
+	@Column(name = "created", nullable = false)
 	private LocalDate created;
 
 	@ManyToMany(fetch = FetchType.LAZY)
@@ -41,6 +41,6 @@ public class Order {
 	private List<Product> products;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "order_status")
+	@Column(name = "order_status", nullable = false)
 	private OrderStatus orderStatus;
 }

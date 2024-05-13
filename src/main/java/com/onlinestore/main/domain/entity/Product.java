@@ -22,29 +22,29 @@ public class Product {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 
-	@Column(name = "name")
+	@Column(name = "name", nullable = false, length = 30)
 	private String name;
 
-	@Column(name = "brand")
+	@Column(name = "brand", nullable = false, length = 30)
 	private String brand;
 
-	@Column(name = "description")
+	@Column(name = "description",nullable = false)
 	private String description;
 
 	@ManyToOne(cascade = CascadeType.PERSIST, optional = false)
-	@JoinColumn(name = "category_id")
+	@JoinColumn(name = "category_id", nullable = false)
 	private Category category;
 
-	@Column(name = "price")
+	@Column(name = "price", nullable = false)
 	private int price;
 
-	@Column(name = "created")
+	@Column(name = "created", nullable = false)
 	private LocalDate created;
 
-	@Column(name = "is_available")
+	@Column(name = "is_available", nullable = false)
 	private boolean isAvailable;
 
-	@Column(name = "received")
+	@Column(name = "received", nullable = false)
 	private LocalDate received;
 
 	@Override
