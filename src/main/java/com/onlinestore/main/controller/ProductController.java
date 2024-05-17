@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/products")
@@ -30,12 +32,12 @@ public class ProductController {
 	}
 
 	@PostMapping
-	public ResponseEntity<?> add(@RequestBody(required = false) @Valid ProductDto productDto) {
+	public ResponseEntity<?> save(@RequestBody(required = false) @Valid ProductDto productDto) {
 		if (productDto == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
-		productService.add(productDto);
+		productService.save(productDto);
 
 		return new ResponseEntity<>("Product add", HttpStatus.CREATED);
 	}
@@ -58,6 +60,17 @@ public class ProductController {
 	@GetMapping("/name/{name}")
 	public ResponseEntity<?> findByName(@PathVariable(value = "name") String name) {
 		return new ResponseEntity<>(productService.findByName(name), HttpStatus.OK);
+	}
+
+	@GetMapping
+	public ResponseEntity<List<ProductDto>> findByParams(@RequestParam(required = false) Map<String, String> params) {
+		List<ProductDto> productDtoList = productService.findByParams(params);
+
+		if (productDtoList.isEmpty()) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity<>(productDtoList, HttpStatus.OK);
 	}
 
 	@PutMapping

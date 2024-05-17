@@ -41,11 +41,13 @@ public class AdminServiceTest {
 
 	@Test
 	public void testChangeUserRoleUserNotFound() {
+		// given
 		String userName = "nonExistingUser";
 		String newRole = "ROLE_ADMIN";
 
 		when(userRepository.findByName(userName)).thenReturn(Optional.empty());
 
+		// when and then
 		assertThrows(UsernameNotFoundException.class, () -> adminService.changeUserRole(userName, newRole));
 
 		verify(userRepository).findByName(userName);
@@ -54,19 +56,22 @@ public class AdminServiceTest {
 
 	@Test
 	public void testChangeUserRoleValidRole() {
+		// given
 		String userName = "existingUser";
 		String newRole = "ROLE_ADMIN";
 		User existingUser = createUser();
 
 		when(userRepository.findByName(userName)).thenReturn(Optional.of(existingUser));
 
+		// when
 		adminService.changeUserRole(userName, newRole);
 
-		assertEquals(Role.valueOf(newRole), existingUser.getRole());
-
+		// then
 		verify(userRepository).findByName(userName);
 		verify(userRepository).save(existingUser);
 		verifyNoMoreInteractions(userRepository);
+
+		assertEquals(Role.valueOf(newRole), existingUser.getRole());
 	}
 
 	private User createUser() {

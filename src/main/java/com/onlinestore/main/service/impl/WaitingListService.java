@@ -33,7 +33,7 @@ public class WaitingListService implements IWaitingListService {
 
 	@Transactional
 	@Override
-	public void add(long productId, String username) {
+	public void save(long productId, String username) {
 		log.info("Starting adding waitingList: " + productId + ", and " + username);
 
 		Product product = findProductById(productId);

@@ -65,7 +65,7 @@ public class ProductControllerTest {
 
 	@Test
 	@WithMockUser(username = "Alex", roles = "ADMIN")
-	public void addWhenHttpStatusOk() throws Exception {
+	public void testSaveWhenHttpStatusOk() throws Exception {
 		final ProductDto productDto = createProductDto();
 		mockMvc.perform(post("/products")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -75,7 +75,7 @@ public class ProductControllerTest {
 
 	@Test
 	@WithAnonymousUser
-	public void addWhenHttpIsUnauthorized() throws Exception {
+	public void testSaveWhenHttpIsUnauthorized() throws Exception {
 		final ProductDto productDto = createProductDto();
 		mockMvc.perform(post("/products")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -85,7 +85,7 @@ public class ProductControllerTest {
 
 	@Test
 	@WithMockUser(username = "Alex", roles = "ADMIN")
-	public void addWhenHttPStatusBadRequest() throws Exception {
+	public void testSaveWhenHttPStatusBadRequest() throws Exception {
 		mockMvc.perform(post("/products")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(null)))
@@ -93,17 +93,17 @@ public class ProductControllerTest {
 	}
 
 	@Test
-	public void findAllWhenHttpStatusOk() throws Exception {
+	public void testFindAllWhenHttpStatusOk() throws Exception {
 		final ProductDto productDto = createProductDto();
-		productService.add(productDto);
+		productService.save(productDto);
 		mockMvc.perform(get("/products/0/10"))
 				.andExpect(status().isOk());
 	}
 
 	@Test
-	public void findByIdWhenStatusProductNotFoundException() throws Exception {
+	public void testFindByIdWhenStatusProductNotFoundException() throws Exception {
 		final ProductDto productDto = createProductDto();
-		productService.add(productDto);
+		productService.save(productDto);
 		mockMvc.perform(get("/products/id/{id}", NOT_FOUND_PRODUCT_ID))
 				.andExpect(status().isNotFound())
 				.andExpect(result -> assertEquals("Product not was found by id " + NOT_FOUND_PRODUCT_ID,
@@ -111,9 +111,9 @@ public class ProductControllerTest {
 	}
 
 	@Test
-	public void findByIdWhenStatusOk() throws Exception {
+	public void testFindByIdWhenStatusOk() throws Exception {
 		final ProductDto productDto = createProductDto();
-		productService.add(productDto);
+		productService.save(productDto);
 		mockMvc.perform(get("/products/id/{id}", PRODUCT_ID)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(productDto)))
@@ -121,10 +121,10 @@ public class ProductControllerTest {
 	}
 
 	@Test
-	public void findByNameWhenHttpStatusOk() throws Exception {
+	public void testFindByNameWhenHttpStatusOk() throws Exception {
 		final ProductDto productDto = createProductDto();
 		productDto.setName("Product");
-		productService.add(productDto);
+		productService.save(productDto);
 		mockMvc.perform(get("/products/name/{name}", "Product")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(productDto)))
@@ -132,10 +132,28 @@ public class ProductControllerTest {
 	}
 
 	@Test
-	@WithMockUser(username = "Alex", roles = "ADMIN")
-	public void updateWhenHttpStatusOk() throws Exception {
+	public void testFindByParamsWhenHttpStatusOk() throws Exception {
 		final ProductDto productDto = createProductDto();
-		productService.add(productDto);
+		productService.save(productDto);
+		mockMvc.perform(get("/products")
+						.param("brand", "Toy brand")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	public void testFindByParamsWhenHttpStatusNotFound() throws Exception {
+		mockMvc.perform(get("/products")
+						.param("brand", "Toy brand")
+						.contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
+	@WithMockUser(username = "Alex", roles = "ADMIN")
+	public void testUpdateWhenHttpStatusOk() throws Exception {
+		final ProductDto productDto = createProductDto();
+		productService.save(productDto);
 		productDto.setId(PRODUCT_ID);
 		mockMvc.perform(put("/products", productDto)
 						.contentType(MediaType.APPLICATION_JSON)
@@ -145,7 +163,7 @@ public class ProductControllerTest {
 
 	@Test
 	@WithMockUser(username = "Alex", roles = "ADMIN")
-	public void updateWhenProductNotFoundException() throws Exception {
+	public void testUpdateWhenProductNotFoundException() throws Exception {
 		final ProductDto productDto = createProductDto();
 		productDto.setId(100);
 		mockMvc.perform(put("/products", productDto)
@@ -158,18 +176,18 @@ public class ProductControllerTest {
 
 	@Test
 	@WithMockUser(username = "Alex", roles = "ADMIN")
-	public void deleteByIdWhenHttpStatusNoContent() throws Exception {
+	public void testDeleteByIdWhenHttpStatusNoContent() throws Exception {
 		final ProductDto productDto = createProductDto();
-		productService.add(productDto);
+		productService.save(productDto);
 		mockMvc.perform(delete("/products/{id}", PRODUCT_ID))
 				.andExpect(status().isNoContent());
 	}
 
 	@Test
 	@WithMockUser(username = "Alex", roles = "ADMIN")
-	public void deleteByIdWhenProductNotFoundException() throws Exception {
+	public void testDeleteByIdWhenProductNotFoundException() throws Exception {
 		final ProductDto productDto = createProductDto();
-		productService.add(productDto);
+		productService.save(productDto);
 		mockMvc.perform(delete("/products/{id}", NOT_FOUND_PRODUCT_ID))
 				.andExpect(status().isNotFound())
 				.andExpect(result -> assertInstanceOf(ProductNotFoundException.class, result.getResolvedException()))

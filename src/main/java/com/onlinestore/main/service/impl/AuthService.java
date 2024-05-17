@@ -31,7 +31,7 @@ public class AuthService implements IAuthService {
 	public String createAuthToken(JwtRequest authRequest) {
 		log.info("Starting creating an authentication token: " + authRequest);
 
-		UserDetails userDetails = loadUserByUsername(authRequest.getUserName());
+		UserDetails userDetails = loadUserByUsername(authRequest.getUsername());
 		if (!passwordEncoder.matches(authRequest.getPassword(), userDetails.getPassword())) {
 			throw new AuthenticationFailedException("Password not valid");
 		}

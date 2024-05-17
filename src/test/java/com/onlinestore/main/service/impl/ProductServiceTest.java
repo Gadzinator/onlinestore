@@ -7,8 +7,11 @@ import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.exception.ProductNotFoundException;
 import com.onlinestore.main.mapper.IProductMapperImpl;
 import com.onlinestore.main.repository.impl.CategoryRepository;
+import com.onlinestore.main.repository.impl.OrderRepository;
 import com.onlinestore.main.repository.impl.ProductRepository;
+import com.onlinestore.main.repository.impl.WaitingListRepository;
 import com.onlinestore.main.service.impl.config.ServiceTestConfiguration;
+import com.onlinestore.main.utils.DateConstant;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -23,8 +26,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,11 +66,18 @@ public class ProductServiceTest {
 	@Mock
 	private CategoryRepository categoryRepository;
 
+	@Mock
+	private WaitingListRepository waitingListRepository;
+
+	@Mock
+	private OrderRepository orderRepository;
+
 	@InjectMocks
 	private ProductService productService;
 
 	@Test
-	public void testAdd() {
+	public void testSave() {
+		// given
 		Category category = new Category();
 		category.setName("TOY");
 		ProductDto productDto = createProductDto();
@@ -73,8 +87,10 @@ public class ProductServiceTest {
 		when(categoryRepository.findByName(productDto.getCategory())).thenReturn(Optional.of(category));
 		doNothing().when(productRepository).save(product);
 
-		productService.add(productDto);
+		// when
+		productService.save(productDto);
 
+		// then
 		verify(productMapper).mapToProduct(productDto);
 		verify(categoryRepository).findByName(productDto.getCategory());
 		verify(productRepository).save(product);
@@ -83,34 +99,45 @@ public class ProductServiceTest {
 	}
 
 	@Test
-	public void testAddProductWhenNUll() {
-		assertThrows(NullPointerException.class, () -> productService.add(null));
+	public void testSaveProductWhenNull() {
+		// when and then
+		assertThrows(NullPointerException.class, () -> productService.save(null));
 	}
 
 	@Test
 	public void testFindByIdWhenProductExist() {
+		// given
 		final Product product = createProduct();
 		final ProductDto expectedProductDto = createProductDto();
 
 		when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
 		when(productMapper.mapToProductDto(product)).thenReturn(expectedProductDto);
 
+		// when
 		ProductDto actualProductDto = productService.findById(PRODUCT_ID);
 
+		// then
 		verify(productRepository).findById(PRODUCT_ID);
 		verify(productMapper).mapToProductDto(product);
+
 		assertEquals(expectedProductDto, actualProductDto);
 	}
 
 	@Test
 	public void testFindByIdWhenProductNotExist() {
+		// given
 		when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.empty());
 
+		// when
 		assertThrows(ProductNotFoundException.class, () -> productService.findById(PRODUCT_ID));
+
+		// then
+		verify(productRepository).findById(PRODUCT_ID);
 	}
 
 	@Test
 	public void testFindAllListNotEmpty() {
+		// given
 		final Product firstProduct = createProduct();
 		final Product secondProduct = createProduct();
 		secondProduct.setId(2);
@@ -125,12 +152,14 @@ public class ProductServiceTest {
 		when(productMapper.mapToProductDto(secondProduct)).thenReturn(secondProductDto);
 
 		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
+
+		// when
 		final Page<ProductDto> actualProductDtoList = productService.findAll(pageable);
 
+		// then
 		verify(productRepository).findAll(any(Pageable.class));
 		verify(productMapper).mapToProductDto(firstProduct);
 		verify(productMapper).mapToProductDto(secondProduct);
-
 
 		assertFalse(actualProductDtoList.isEmpty());
 		assertEquals(2, actualProductDtoList.getSize());
@@ -140,23 +169,31 @@ public class ProductServiceTest {
 
 	@Test
 	public void testFindAllWhenProductsNotExist() {
+		// given
 		when(productRepository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
 		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
 
+		// when
 		assertThrows(ProductNotFoundException.class, () -> productService.findAll(pageable));
+
+		// then
+		verify(productRepository).findAll(pageable);
 	}
 
 	@Test
 	public void findByNameProductExist() {
+		// given
 		final Product product = createProduct();
 		final ProductDto productDto = createProductDto();
 
 		when(productRepository.findByName(PRODUCT_NAME)).thenReturn(Optional.of(product));
 		when(productMapper.mapToProductDto(product)).thenReturn(productDto);
 
+		// when
 		final ProductDto actualeProductDto = productService.findByName(PRODUCT_NAME);
 
+		// then
 		verify(productRepository, times(1)).findByName(PRODUCT_NAME);
 		verify(productMapper, times(1)).mapToProductDto(product);
 
@@ -167,14 +204,59 @@ public class ProductServiceTest {
 
 	@Test
 	public void findByNameWhenProductNotExist() {
+		// given
 		when(productRepository.findByName(PRODUCT_NAME)).thenReturn(Optional.empty());
 
+		// when
 		assertThrows(ProductNotFoundException.class, () -> productService.findByName(PRODUCT_NAME));
+
+		// then
+		verify(productRepository).findByName(PRODUCT_NAME);
+	}
+
+	@Test
+	public void findByParamsWhenProductExist() {
+		// given
+		Map<String, String> params = new HashMap<>();
+		params.put("brand", "Toy brand");
+
+		final Product product = createProduct();
+		final ProductDto productDto = createProductDto();
+
+		when(productRepository.findByParams(params)).thenReturn(List.of(product));
+		when(productMapper.mapToProductDto(product)).thenReturn(productDto);
+
+		// when
+		final List<ProductDto> productDtoList = productService.findByParams(params);
+
+		// then
+		verify(productRepository).findByParams(params);
+		verify(productMapper).mapToProductDto(product);
+
+		assertEquals(1, productDtoList.size());
+		assertEquals(productDto, productDtoList.get(0));
+	}
+
+	@Test
+	public void findByParamsWhenProductNotExist() {
+		// given
+		Map<String, String> params = new HashMap<>();
+		params.put("brand", "Brand");
+
+		when(productRepository.findByParams(params)).thenReturn(Collections.emptyList());
+
+		// when
+		assertThrows(ProductNotFoundException.class, () -> productService.findByParams(params));
+
+		// then
+		verify(productRepository).findByParams(params);
 	}
 
 	@Test
 	public void testUpdateWhenProductFound() {
+		// given
 		final ProductDto productDto = createProductDto();
+		productDto.setName("Product Dto");
 		Category category = new Category();
 		category.setName("TOY");
 		final Product product = createProduct();
@@ -184,8 +266,10 @@ public class ProductServiceTest {
 		when(categoryRepository.findByName(productDto.getCategory())).thenReturn(Optional.of(category));
 		doNothing().when(productRepository).update(any(Product.class));
 
+		// when
 		productService.update(productDto);
 
+		// then
 		final ArgumentCaptor<Product> productArgumentCaptor = ArgumentCaptor.forClass(Product.class);
 
 		verify(productRepository).findById(PRODUCT_ID);
@@ -198,38 +282,54 @@ public class ProductServiceTest {
 
 	@Test
 	public void testUpdateWhenProductNotFound() {
+		// given
 		final ProductDto productDto = createProductDto();
 
 		when(productRepository.findById(productDto.getId())).thenReturn(Optional.empty());
 
+		// when
 		assertThrows(ProductNotFoundException.class, () -> productService.update(productDto));
+
+		// then
 		verify(productRepository).findById(productDto.getId());
 		verify(productRepository, never()).update(any(Product.class));
 	}
 
 	@Test
 	public void deleteByIDWhenProductExist() {
+		// given
 		final Product product = createProduct();
 		final ProductDto expectedProductDto = createProductDto();
 
+		when(waitingListRepository.findByProduct(product)).thenReturn(Optional.empty());
+		when(orderRepository.findProductsOrderId(PRODUCT_ID)).thenReturn(Collections.emptyList());
 		when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
 		when(productMapper.mapToProductDto(product)).thenReturn(expectedProductDto);
 
+		// when
 		productService.deleteByID(PRODUCT_ID);
 
+		// then
+		verify(waitingListRepository).findByProduct(product);
+		verify(orderRepository).findProductsOrderId(PRODUCT_ID);
 		verify(productRepository).findById(PRODUCT_ID);
 		verify(productMapper).mapToProductDto(product);
 	}
 
 	@Test
 	public void deleteByIDWhenProductNotExist() {
+		// given
 		when(productRepository.findById(PRODUCT_ID)).thenThrow(ProductNotFoundException.class);
 
+		// when
 		assertThrows(ProductNotFoundException.class, () -> productService.deleteByID(PRODUCT_ID));
+
+		// then
 		verify(productRepository, never()).deleteById(PRODUCT_ID);
 	}
 
 	private Product createProduct() {
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DateConstant.DEFAULT_DATE_PATTERN);
 		Category category = new Category();
 		category.setName("TOY");
 		Product product = new Product();
@@ -239,9 +339,9 @@ public class ProductServiceTest {
 		product.setDescription("Toy description");
 		product.setCategory(category);
 		product.setPrice(100);
-		product.setCreated(LocalDate.now());
+		product.setCreated(LocalDate.parse("01-11-2024", dateTimeFormatter));
 		product.setAvailable(true);
-		product.setReceived(LocalDate.now().plusDays(3));
+		product.setReceived(LocalDate.parse("01-01-2024", dateTimeFormatter));
 
 		return product;
 	}

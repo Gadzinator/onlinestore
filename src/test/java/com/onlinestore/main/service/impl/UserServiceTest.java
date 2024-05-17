@@ -72,6 +72,7 @@ public class UserServiceTest {
 
 	@Test
 	public void testCreateNewUserWhenUserValidate() {
+		// given
 		RegistrationUserDto registrationUserDto = createRegistrationUserDto();
 		UserDto userDto = createUserDto();
 
@@ -82,8 +83,10 @@ public class UserServiceTest {
 		doNothing().when(userRepository).save(any(User.class));
 		when(userMapper.mapToUserDto(any(User.class))).thenCallRealMethod();
 
+		// when
 		userService.createNewUser(registrationUserDto);
 
+		// then
 		verify(userRepository).findByName(USER_NAME);
 		verify(userRepository).findUserByEmail(USER_EMAIL);
 		verify(passwordEncoder).encode(PASSWORD);
@@ -97,11 +100,13 @@ public class UserServiceTest {
 
 	@Test
 	public void testCreateNewUserWhenPasswordNotValidate() {
+		// given
 		RegistrationUserDto registrationUserDto = createRegistrationUserDto();
 		registrationUserDto.setConfirmPassword("sdasdasdas");
 
 		when(userRepository.findByName(USER_NAME)).thenReturn(Optional.empty());
 
+		// when and then
 		assertThrows(PasswordMismatchException.class, () -> userService.createNewUser(registrationUserDto));
 
 		verify(userRepository).findByName(USER_NAME);
@@ -109,11 +114,13 @@ public class UserServiceTest {
 
 	@Test
 	public void testCreateNewUserWhenEmailNotValidate() {
+		// given
 		RegistrationUserDto registrationUserDto = createRegistrationUserDto();
 
 		when(userRepository.findByName(USER_NAME)).thenReturn(Optional.empty());
 		when(userRepository.findUserByEmail(USER_EMAIL)).thenReturn(Optional.of(new User()));
 
+		// when and then
 		assertThrows(UsernameNotUniqueException.class, () -> userService.createNewUser(registrationUserDto));
 
 		verify(userRepository).findByName(USER_NAME);
@@ -122,14 +129,17 @@ public class UserServiceTest {
 
 	@Test
 	public void testFindByIdWhenUserExist() {
+		// given
 		final User user = createUser();
 		final UserDto expectedUserDto = createUserDto();
 
 		when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 		when(userMapper.mapToUserDto(user)).thenReturn(expectedUserDto);
 
+		// when
 		final UserDto actualUserDto = userService.findById(USER_ID);
 
+		// then
 		verify(userRepository).findById(USER_ID);
 		verify(userMapper).mapToUserDto(user);
 
@@ -140,21 +150,28 @@ public class UserServiceTest {
 
 	@Test
 	public void testFindByIdWhenUserNotExist() {
+		// given
 		when(userRepository.findById(USER_ID)).thenReturn(Optional.empty());
 
+		// when and then
 		assertThrows(UserNotFoundException.class, () -> userService.findById(USER_ID));
+
+		verify(userRepository).findById(USER_ID);
 	}
 
 	@Test
 	public void testFindByNameUserExist() {
+		// given
 		final User user = createUser();
 		final UserDto expectedUserDto = createUserDto();
 
 		when(userRepository.findByName(USER_NAME)).thenReturn(Optional.of(user));
 		when(userMapper.mapToUserDto(user)).thenReturn(expectedUserDto);
 
+		// when
 		final UserDto actualUserDto = userService.findByName(USER_NAME);
 
+		// then
 		verify(userRepository).findByName(USER_NAME);
 		verify(userMapper).mapToUserDto(user);
 
@@ -165,13 +182,18 @@ public class UserServiceTest {
 
 	@Test
 	public void testFindByNameUserNotExist() {
+		// given
 		when(userRepository.findByName(USER_NAME)).thenReturn(Optional.empty());
 
+		// when and then
 		assertThrows(UserNotFoundException.class, () -> userService.findByName(USER_NAME));
+
+		verify(userRepository).findByName(USER_NAME);
 	}
 
 	@Test
 	public void testFindAllWhenListNotEmpty() {
+		// given
 		final User firstUser = createUser();
 		final User secondUser = createUser();
 		secondUser.setId(2);
@@ -186,12 +208,14 @@ public class UserServiceTest {
 		when(userMapper.mapToUserDto(secondUser)).thenReturn(secondUserDto);
 
 		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
+
+		// when
 		final Page<UserDto> actualUserDtoList = userService.findAll(pageable);
 
+		// then
 		verify(userRepository).findAll(any(Pageable.class));
 		verify(userMapper).mapToUserDto(firstUser);
 		verify(userMapper).mapToUserDto(secondUser);
-
 
 		assertFalse(actualUserDtoList.isEmpty());
 		assertEquals(2, actualUserDtoList.getSize());
@@ -201,23 +225,30 @@ public class UserServiceTest {
 
 	@Test
 	public void testFindAllWhenNotUsersExist() {
+		// given
 		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
 
 		when(userRepository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
+		// when and then
 		assertThrows(UserNotFoundException.class, () -> userService.findAll(pageable));
+
+		verify(userRepository).findAll(pageable);
 	}
 
 	@Test
 	public void testDeleteByIdWhenUserExist() {
+		// given
 		final User user = createUser();
 		final UserDto expectedUserDto = createUserDto();
 
 		when(userRepository.findById(USER_ID)).thenReturn(Optional.of(user));
 		when(userMapper.mapToUserDto(user)).thenReturn(expectedUserDto);
 
+		// when
 		userService.deleteById(USER_ID);
 
+		// then
 		verify(userRepository).findById(USER_ID);
 		verify(userMapper).mapToUserDto(user);
 		verify(userRepository).deleteById(USER_ID);
@@ -225,9 +256,12 @@ public class UserServiceTest {
 
 	@Test
 	public void testDeleteByIdWhenUserNotExist() {
+		// given
 		when(userRepository.findById(USER_ID)).thenThrow(UserNotFoundException.class);
 
+		// when and then
 		assertThrows(UserNotFoundException.class, () -> userService.deleteById(USER_ID));
+
 		verify(userRepository, never()).deleteById(USER_ID);
 	}
 

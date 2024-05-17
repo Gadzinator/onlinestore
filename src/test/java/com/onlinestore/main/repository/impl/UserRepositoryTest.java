@@ -32,7 +32,7 @@ public class UserRepositoryTest {
 	private static final String UPDATE_USER_NAME = "updated_username";
 
 	@Test
-	public void testAdd() {
+	public void testSave() {
 		User user = createUser();
 
 		userRepositoryDao.save(user);

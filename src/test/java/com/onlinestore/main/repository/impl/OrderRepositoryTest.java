@@ -37,7 +37,7 @@ public class OrderRepositoryTest {
 	private ProductRepository productRepository;
 
 	@Test
-	public void testAdd() {
+	public void testSave() {
 		final Product product = createProduct();
 		final Order order = createOrder(product);
 		orderRepository.save(order);

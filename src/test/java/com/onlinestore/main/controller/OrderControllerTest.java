@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onlinestore.main.config.HibernateConfig;
 import com.onlinestore.main.config.LiquibaseConfig;
 import com.onlinestore.main.controller.config.WebMvcConfig;
-import com.onlinestore.main.domain.dto.OrderDto;
+import com.onlinestore.main.domain.dto.OrderRequestDto;
+import com.onlinestore.main.domain.dto.OrderResponseDto;
 import com.onlinestore.main.domain.dto.ProductDto;
 import com.onlinestore.main.domain.dto.RegistrationUserDto;
 import com.onlinestore.main.domain.entity.OrderStatus;
@@ -60,6 +61,8 @@ public class OrderControllerTest {
 
 	private static final String USER_NAME = "Alex";
 
+	private static final long USER_ID = 1;
+
 	private static final String PASSWORD = "password";
 
 	private static final String USER_EMAIL = "alex@gmail.com";
@@ -89,18 +92,18 @@ public class OrderControllerTest {
 
 	@Test
 	@WithUserDetails(value = "Alex", setupBefore = TestExecutionEvent.TEST_EXECUTION, userDetailsServiceBeanName = "authService")
-	public void addWhenHttpStatusOk() throws Exception {
+	public void testSaveWhenHttpStatusOk() throws Exception {
 		final ProductDto productDto = productService.findById(PRODUCT_ID);
-		final OrderDto orderDto = createOrderDto(productDto);
+		final OrderRequestDto orderRequestDto = createOrderRequestDto(productDto);
 		mockMvc.perform(post("/orders")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(orderDto)))
+						.content(objectMapper.writeValueAsString(orderRequestDto)))
 				.andExpect(status().isCreated());
 	}
 
 	@Test
 	@WithUserDetails(value = "Alex", setupBefore = TestExecutionEvent.TEST_EXECUTION, userDetailsServiceBeanName = "authService")
-	public void addWhenHttPStatusBadRequest() throws Exception {
+	public void testSaveWhenHttPStatusBadRequest() throws Exception {
 		mockMvc.perform(post("/orders")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(objectMapper.writeValueAsString(null)))
@@ -109,7 +112,7 @@ public class OrderControllerTest {
 
 	@Test
 	@WithUserDetails(value = "Alex", setupBefore = TestExecutionEvent.TEST_EXECUTION, userDetailsServiceBeanName = "authService")
-	public void findByIdWhenStatusOrderNotFoundException() throws Exception {
+	public void testFindByIdWhenStatusOrderNotFoundException() throws Exception {
 		mockMvc.perform(get("/orders/id/{id}", NOT_FOUND_ORDER_ID)
 						.with(user("Alex")))
 				.andExpect(result -> assertEquals("Order not was found by id " + NOT_FOUND_ORDER_ID,
@@ -118,55 +121,55 @@ public class OrderControllerTest {
 
 	@Test
 	@WithUserDetails(value = "Alex", setupBefore = TestExecutionEvent.TEST_EXECUTION, userDetailsServiceBeanName = "authService")
-	public void findAllWhenHttpStatusOk() throws Exception {
+	public void testFindAllWhenHttpStatusOk() throws Exception {
 		mockMvc.perform(get("/orders/0/10"))
 				.andExpect(status().isOk());
 	}
 
 	@Test
 	@WithAnonymousUser
-	public void findAllWhenNotAuthenticatedThenHttpStatusUnauthorized() throws Exception {
+	public void testFindAllWhenNotAuthenticatedThenHttpStatusUnauthorized() throws Exception {
 		mockMvc.perform(get("/orders/0/10"))
 				.andExpect(status().isUnauthorized());
 	}
 
 	@Test
 	@WithMockUser(username = "Alex", roles = "ADMIN")
-	public void updateWhenHttpStatusOk() throws Exception {
+	public void testUpdateWhenHttpStatusOk() throws Exception {
 		final ProductDto productDto = createProductDto();
 		productDto.setId(PRODUCT_ID);
-		final OrderDto orderDto = createOrderDto(productDto);
-		orderDto.setId(ORDER_ID);
-		mockMvc.perform(put("/orders", orderDto)
+		final OrderRequestDto orderRequestDto = createOrderRequestDto(productDto);
+		orderRequestDto.setId(ORDER_ID);
+		mockMvc.perform(put("/orders", orderRequestDto)
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(productDto)))
+						.content(objectMapper.writeValueAsString(orderRequestDto)))
 				.andExpect(status().isOk());
 	}
 
 	@Test
 	@WithMockUser(username = "Alex", roles = "ADMIN")
-	public void updateWhenOrderNotFoundException() throws Exception {
+	public void testUpdateWhenOrderNotFoundException() throws Exception {
 		final ProductDto productDto = createProductDto();
-		final OrderDto orderDto = createOrderDto(productDto);
-		orderDto.setId(NOT_FOUND_ORDER_ID);
-		mockMvc.perform(put("/orders", orderDto)
+		final OrderResponseDto orderResponseDto = createOrderDto(productDto);
+		orderResponseDto.setId(NOT_FOUND_ORDER_ID);
+		mockMvc.perform(put("/orders", orderResponseDto)
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(orderDto)))
+						.content(objectMapper.writeValueAsString(orderResponseDto)))
 				.andExpect(status().isNotFound())
-				.andExpect(result -> assertEquals("Order not was found by id " + orderDto.getId(),
+				.andExpect(result -> assertEquals("Order not was found by id " + orderResponseDto.getId(),
 						Objects.requireNonNull(result.getResolvedException()).getMessage()));
 	}
 
 	@Test
 	@WithMockUser(username = "Alex", roles = "ADMIN")
-	public void deleteByIdWhenHttpStatusNoContent() throws Exception {
+	public void testDeleteByIdWhenHttpStatusNoContent() throws Exception {
 		mockMvc.perform(delete("/orders/{id}", ORDER_ID))
 				.andExpect(status().isNoContent());
 	}
 
 	@Test
 	@WithMockUser(username = "Alex", roles = "ADMIN")
-	public void deleteByIdWhenOrderNotFoundException() throws Exception {
+	public void testDeleteByIdWhenOrderNotFoundException() throws Exception {
 		mockMvc.perform(delete("/orders/{id}", NOT_FOUND_ORDER_ID))
 				.andExpect(status().isNotFound())
 				.andExpect(result -> assertInstanceOf(OrderNotFoundException.class, result.getResolvedException()))
@@ -176,24 +179,40 @@ public class OrderControllerTest {
 
 	private void init() {
 		final ProductDto productDto = createProductDto();
-		productService.add(productDto);
+		productService.save(productDto);
 		final ProductDto productById = productService.findById(PRODUCT_ID);
-		final OrderDto orderDto = createOrderDto(productById);
-		orderService.add(orderDto);
 
 		final RegistrationUserDto registrationUserDto = createRegistrationUserDto();
 		userService.createNewUser(registrationUserDto);
+
+		final OrderRequestDto orderRequestDto = createOrderRequestDto(productById);
+
+		orderService.save(orderRequestDto);
 	}
 
-	private OrderDto createOrderDto(ProductDto productDto) {
+	private OrderResponseDto createOrderDto(ProductDto productDto) {
 		List<ProductDto> productDtoList = new ArrayList<>();
 		productDtoList.add(productDto);
-		OrderDto orderDto = new OrderDto();
-		orderDto.setCreated("01-01-2024");
-		orderDto.setProducts(productDtoList);
-		orderDto.setOrderStatus(OrderStatus.READY.getValue());
+		OrderResponseDto orderResponseDto = new OrderResponseDto();
+		orderResponseDto.setUserId(USER_ID);
+		orderResponseDto.setCreated("01-01-2024");
+		orderResponseDto.setProducts(productDtoList);
+		orderResponseDto.setOrderStatus(OrderStatus.READY.getValue());
 
-		return orderDto;
+		return orderResponseDto;
+	}
+
+	private OrderRequestDto createOrderRequestDto(ProductDto productDto) {
+		List<Long> productsIds = new ArrayList<>();
+		productsIds.add(productDto.getId());
+
+		OrderRequestDto orderRequestDto = new OrderRequestDto();
+		orderRequestDto.setUserId(USER_ID);
+		orderRequestDto.setCreated("01-11-2024");
+		orderRequestDto.setProductIds(productsIds);
+		orderRequestDto.setOrderStatus(OrderStatus.IN_PROGRESS);
+
+		return orderRequestDto;
 	}
 
 	private ProductDto createProductDto() {

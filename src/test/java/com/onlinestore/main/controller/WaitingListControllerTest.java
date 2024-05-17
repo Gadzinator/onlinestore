@@ -76,7 +76,7 @@ public class WaitingListControllerTest {
 	@WithUserDetails(value = "Alex", setupBefore = TestExecutionEvent.TEST_EXECUTION, userDetailsServiceBeanName = "authService")
 	public void testAddProductWaitingListWheHttpStatusIsCreated() throws Exception {
 		final ProductDto productDto = createProductDto();
-		productService.add(productDto);
+		productService.save(productDto);
 		mockMvc.perform(post("/waitingLists/{productId}/{username}", PRODUCT_ID, USER_NAME)
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isCreated());
@@ -86,7 +86,7 @@ public class WaitingListControllerTest {
 	@WithAnonymousUser
 	public void testAddProductWaitingListWhenStatusIsForbidden() throws Exception {
 		final ProductDto productDto = createProductDto();
-		productService.add(productDto);
+		productService.save(productDto);
 		mockMvc.perform(post("/waitingLists/{productId}/{username}", PRODUCT_ID, USER_NAME)
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isUnauthorized());

@@ -78,7 +78,7 @@ public class AuthControllerTest {
 	@WithUserDetails(value = "Alex", setupBefore = TestExecutionEvent.TEST_EXECUTION, userDetailsServiceBeanName = "authService")
 	public void testCreateAuthTokenWhenTokenHttpStatusNotFound() throws Exception {
 		JwtRequest authRequest = new JwtRequest();
-		authRequest.setUserName("username");
+		authRequest.setUsername("username");
 		authRequest.setPassword("password");
 
 		SecurityContextHolder.clearContext();
@@ -92,7 +92,7 @@ public class AuthControllerTest {
 	@WithAnonymousUser
 	public void testCreateAuthTokenWhenTokenHttpStatusIsNotFoundUser() throws Exception {
 		JwtRequest authRequest = new JwtRequest();
-		authRequest.setUserName("username");
+		authRequest.setUsername("username");
 		authRequest.setPassword("password");
 
 		SecurityContextHolder.clearContext();
@@ -106,7 +106,7 @@ public class AuthControllerTest {
 	@WithUserDetails(value = "Alex", setupBefore = TestExecutionEvent.TEST_EXECUTION, userDetailsServiceBeanName = "authService")
 	public void testCreateAuthTokenWhenTokenHttpStatusIsOk() throws Exception {
 		JwtRequest authRequest = new JwtRequest();
-		authRequest.setUserName(USER_NAME_ALEX);
+		authRequest.setUsername(USER_NAME_ALEX);
 		authRequest.setPassword(PASSWORD_ALEX);
 
 		authService.createAuthToken(authRequest);

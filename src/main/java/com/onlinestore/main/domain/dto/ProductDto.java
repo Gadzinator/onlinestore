@@ -2,6 +2,7 @@ package com.onlinestore.main.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.onlinestore.main.utils.DateConstant;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -30,7 +31,7 @@ public class ProductDto {
 	@Min(value = 0)
 	private int price;
 
-	@JsonFormat(pattern = "dd-MM-yyyy")
+	@JsonFormat(pattern = DateConstant.DEFAULT_DATE_PATTERN)
 	@NotBlank(message = "created should not be blank")
 	private String created;
 
@@ -39,6 +40,6 @@ public class ProductDto {
 	private boolean isAvailable;
 
 	@NotBlank(message = "received should not be blank")
-	@JsonFormat(pattern = "dd-MM-yyyy")
+	@JsonFormat(pattern = DateConstant.DEFAULT_DATE_PATTERN)
 	private String received;
 }

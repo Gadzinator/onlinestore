@@ -101,6 +101,13 @@ public class GlobalExceptionHandler {
 		return handleGlobal(exception, request, HttpStatus.FORBIDDEN);
 	}
 
+	@ExceptionHandler(ProductInUseException.class)
+	public ResponseEntity<?> handleProductInUseException(ProductInUseException exception, WebRequest request) {
+		log.error("Access denied ", exception);
+
+		return handleGlobal(exception, request, HttpStatus.LOCKED);
+	}
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<?> handleResourceNotFoundException(MethodArgumentNotValidException exception, WebRequest request) {
 		log.error(exception.getMessage());

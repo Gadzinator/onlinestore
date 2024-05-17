@@ -62,6 +62,7 @@ public class AuthServiceTest {
 
 	@Test
 	public void testCreateAuthTokenInvalidPassword() {
+		// given
 		JwtRequest authRequest = createJwtRequest();
 
 		User user = createUser();
@@ -70,6 +71,7 @@ public class AuthServiceTest {
 		when(userRepository.findByName(USER_NAME)).thenReturn(Optional.of(user));
 		when(passwordEncoder.matches(authRequest.getPassword(), userDetails.getPassword())).thenReturn(false);
 
+		// when and then
 		assertThrows(AuthenticationFailedException.class, () -> authService.createAuthToken(authRequest));
 
 		verify(userRepository).findByName(USER_NAME);
@@ -78,6 +80,7 @@ public class AuthServiceTest {
 
 	@Test
 	public void testCreateAuthTokenValidCredentials() {
+		// given
 		JwtRequest authRequest = createJwtRequest();
 
 		User user = createUser();
@@ -87,18 +90,23 @@ public class AuthServiceTest {
 		when(jwtTokenUtils.generateToken(userDetails)).thenReturn(TOKEN);
 		when(passwordEncoder.matches(authRequest.getPassword(), userDetails.getPassword())).thenReturn(true);
 
+		// when
 		String token = authService.createAuthToken(authRequest);
 
+		// then
 		verify(userRepository).findByName(USER_NAME);
 		verify(jwtTokenUtils).generateToken(userDetails);
 		verify(passwordEncoder).matches(authRequest.getPassword(), userDetails.getPassword());
+
 		assertEquals(TOKEN, token);
 	}
 
 	@Test
 	public void loadUserByUsernameWhenUserNotExist() {
+		// given
 		when(userRepository.findByName(USER_NAME)).thenReturn(Optional.empty());
 
+		// when and then
 		assertThrows(UserNotFoundException.class, () -> authService.loadUserByUsername(USER_NAME));
 
 		verify(userRepository).findByName(USER_NAME);
@@ -106,12 +114,15 @@ public class AuthServiceTest {
 
 	@Test
 	public void loadUserByUsernameWhenUserExist() {
+		// given
 		User user = createUser();
 
 		when(userRepository.findByName(USER_NAME)).thenReturn(Optional.of(user));
 
+		// when
 		UserDetails userDetails = authService.loadUserByUsername(USER_NAME);
 
+		// then
 		verify(userRepository).findByName(USER_NAME);
 
 		assertEquals(userDetails.getUsername(), user.getName());
@@ -131,7 +142,7 @@ public class AuthServiceTest {
 
 	private JwtRequest createJwtRequest() {
 		JwtRequest authRequest = new JwtRequest();
-		authRequest.setUserName(USER_NAME);
+		authRequest.setUsername(USER_NAME);
 		authRequest.setPassword(PASSWORD);
 
 		return authRequest;

@@ -30,7 +30,7 @@ public class ProductRepositoryTest {
 	private static final String PRODUCT_NAME = "Toy name";
 
 	@Test
-	public void testAdd() {
+	public void testSave() {
 		final Product product = createProduct();
 		productRepositoryDao.save(product);
 

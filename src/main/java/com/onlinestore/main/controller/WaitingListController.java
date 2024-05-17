@@ -20,7 +20,7 @@ public class WaitingListController {
 
 	@PostMapping("/{productId}/{username}")
 	public ResponseEntity<?> add(@PathVariable(value = "productId") Long productId, @PathVariable(value = "username") String username) {
-		waitingListService.add(productId, username);
+		waitingListService.save(productId, username);
 
 		return new ResponseEntity<>("waitingList add", HttpStatus.CREATED);
 	}

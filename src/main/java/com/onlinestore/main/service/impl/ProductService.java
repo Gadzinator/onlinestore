@@ -3,17 +3,29 @@ package com.onlinestore.main.service.impl;
 import com.onlinestore.main.domain.dto.ProductDto;
 import com.onlinestore.main.domain.entity.Category;
 import com.onlinestore.main.domain.entity.Product;
+import com.onlinestore.main.domain.entity.WaitingList;
+import com.onlinestore.main.exception.ProductInUseException;
 import com.onlinestore.main.exception.ProductNotFoundException;
 import com.onlinestore.main.mapper.IProductMapper;
 import com.onlinestore.main.repository.impl.CategoryRepository;
+import com.onlinestore.main.repository.impl.OrderRepository;
 import com.onlinestore.main.repository.impl.ProductRepository;
+import com.onlinestore.main.repository.impl.WaitingListRepository;
 import com.onlinestore.main.service.IProductService;
+import com.onlinestore.main.utils.DateConstant;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Log4j2
 @AllArgsConstructor
@@ -24,11 +36,15 @@ public class ProductService implements IProductService {
 
 	private CategoryRepository categoryRepository;
 
+	private WaitingListRepository waitingListRepository;
+
+	private OrderRepository orderRepository;
+
 	private IProductMapper productMapper;
 
 	@Transactional
 	@Override
-	public void add(ProductDto productDto) {
+	public void save(ProductDto productDto) {
 		log.info("Starting adding product: " + productDto);
 
 		if (productDto == null) {
@@ -87,6 +103,28 @@ public class ProductService implements IProductService {
 		return productDto;
 	}
 
+	@Override
+	public List<ProductDto> findByParams(Map<String, String> params) {
+		log.info("Starting finding product by params: " + params);
+		List<ProductDto> productDtoList = new ArrayList<>();
+
+		final List<Product> productList = productRepository.findByParams(params);
+		if (productList.isEmpty()) {
+
+			log.error("Product not was found by params: " + params);
+
+			throw new ProductNotFoundException("Product not was found by params " + params);
+		}
+
+		for (Product product : productList) {
+			productDtoList.add(productMapper.mapToProductDto(product));
+		}
+
+		log.info("Finished finding product by params: " + params);
+
+		return productDtoList;
+	}
+
 	@Transactional
 	@Override
 	public void update(ProductDto updateProductDto) {
@@ -94,15 +132,9 @@ public class ProductService implements IProductService {
 
 		Product product = productRepository.findById(updateProductDto.getId())
 				.orElseThrow(() -> new ProductNotFoundException("Product not was found by id " + updateProductDto.getId()));
-		Category category = findCategoryByName(updateProductDto.getCategory());
 
-		if (category == null) {
-			category = addCategory(updateProductDto.getCategory());
+		updateAllFields(product, updateProductDto);
 
-			log.info("Category not found. Added new category successfully: " + category.getName());
-		}
-
-		product.setCategory(category);
 		productRepository.update(product);
 
 		log.info("Finished product updated successfully: " + product);
@@ -112,15 +144,16 @@ public class ProductService implements IProductService {
 	@Override
 	public void deleteByID(long id) {
 		log.info("Starting deleting product by id: " + id);
-
 		ProductDto productDto = findById(id);
-		if (productDto != null) {
-			productRepository.deleteById(id);
 
-			log.info("Finished Product deleted successfully");
-		} else {
-			throw new ProductNotFoundException("Product not was found by id " + id);
-		}
+		final Product product = productMapper.mapToProduct(productDto);
+
+		checkIfProductInWaitingList(product);
+		checkIfProductInOrder(product);
+
+		productRepository.deleteById(id);
+
+		log.info("Finished Product deleted successfully");
 	}
 
 	private Category findCategoryByName(String categoryName) {
@@ -128,6 +161,30 @@ public class ProductService implements IProductService {
 
 		return categoryRepository.findByName(categoryName)
 				.orElse(null);
+	}
+
+	private void updateAllFields(Product product, ProductDto updateProductDto) {
+		log.info("Starting update all fields product: " + product);
+
+		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(DateConstant.DEFAULT_DATE_PATTERN);
+		product.setName(updateProductDto.getName());
+		product.setBrand(updateProductDto.getBrand());
+		product.setDescription(updateProductDto.getDescription());
+
+		Category category = findCategoryByName(updateProductDto.getCategory());
+		if (category == null) {
+			category = addCategory(updateProductDto.getCategory());
+
+			log.info("Category not found. Added new category successfully: " + category.getName());
+		}
+
+		product.setCategory(category);
+		product.setPrice(updateProductDto.getPrice());
+		product.setCreated(LocalDate.parse(updateProductDto.getCreated(), dateTimeFormatter));
+		product.setAvailable(updateProductDto.isAvailable());
+		product.setReceived(LocalDate.parse(updateProductDto.getReceived(), dateTimeFormatter));
+
+		log.info("Finished update all fields product: " + product);
 	}
 
 	private Category addCategory(String categoryName) {
@@ -140,5 +197,33 @@ public class ProductService implements IProductService {
 		log.info("Finished new category added successfully: " + category);
 
 		return category;
+	}
+
+	private void checkIfProductInWaitingList(Product product) {
+		log.info("Starting check if product in waiting list: " + product);
+
+		final Optional<WaitingList> optionalWaitingList = waitingListRepository.findByProduct(product);
+
+		if (optionalWaitingList.isPresent()) {
+			log.error("The product cannot be deleted it is used in waitingList: " + product);
+
+			throw new ProductInUseException("The product cannot be deleted it is used in waitingList: " + product);
+		}
+
+		log.info("Finished check if product in waiting list: " + product);
+	}
+
+	private void checkIfProductInOrder(Product product) {
+		log.info("Starting check if product in order: " + product);
+
+		final List<Product> productList = orderRepository.findProductsOrderId(product.getId());
+		if (!productList.isEmpty()) {
+
+			log.error("The product cannot be deleted it is used in order: " + productList);
+
+			throw new ProductInUseException("The product cannot be deleted it is used in order: " + productList);
+		}
+
+		log.info("Finished check if product in order: " + product);
 	}
 }

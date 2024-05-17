@@ -1,13 +1,20 @@
 package com.onlinestore.main.service.impl;
 
-import com.onlinestore.main.domain.dto.OrderDto;
+import com.onlinestore.main.domain.dto.OrderRequestDto;
+import com.onlinestore.main.domain.dto.OrderResponseDto;
 import com.onlinestore.main.domain.dto.ProductDto;
+import com.onlinestore.main.domain.dto.UserDto;
 import com.onlinestore.main.domain.entity.Category;
 import com.onlinestore.main.domain.entity.Order;
 import com.onlinestore.main.domain.entity.OrderStatus;
 import com.onlinestore.main.domain.entity.Product;
+import com.onlinestore.main.domain.entity.User;
 import com.onlinestore.main.exception.OrderNotFoundException;
+import com.onlinestore.main.exception.UserNotFoundException;
 import com.onlinestore.main.mapper.IOrderMapperImpl;
+import com.onlinestore.main.mapper.IOrderResponseMapperImpl;
+import com.onlinestore.main.mapper.IProductMapperImpl;
+import com.onlinestore.main.mapper.IUserMapperImpl;
 import com.onlinestore.main.repository.impl.OrderRepository;
 import com.onlinestore.main.service.impl.config.ServiceTestConfiguration;
 import org.junit.Test;
@@ -27,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static com.onlinestore.main.domain.entity.Role.ROLE_USER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -52,64 +60,117 @@ public class OrderServiceTest {
 
 	private static final int PAGE_SIZE = 10;
 
+	private static final long USER_ID = 1;
+
+	private static final String USER_NAME = "Alex";
+
+	private static final String USER_EMAIL = "alex@gmail.ru";
+
+	private static final String PASSWORD = "Alex";
+
 	@Mock
 	private OrderRepository orderRepository;
 
 	@Mock
 	private IOrderMapperImpl orderMapper;
 
+	@Mock
+	private IUserMapperImpl userMapper;
+
+	@Mock
+	private IProductMapperImpl productMapper;
+
+	@Mock
+	private IOrderResponseMapperImpl orderResponseMapper;
+
+	@Mock
+	private UserService userService;
+
+	@Mock
+	private ProductService productService;
+
 	@InjectMocks
 	private OrderService orderService;
 
 	@Test
-	public void testAdd() {
+	public void testSave() {
+		// given
 		final ProductDto productDto = createProductDto();
-		OrderDto orderDto = createOrderDto(productDto);
 		final Product product = createProduct();
 		Order order = createOrder(product);
 
-		when(orderMapper.mapToOrder(orderDto)).thenReturn(order);
+		final User user = createUser();
+		final UserDto userDto = createUserDto();
+		final OrderRequestDto orderRequestDto = createOrderRequestDto(productDto);
+
+		when(userService.findById(orderRequestDto.getUserId())).thenReturn(userDto);
+		when(userMapper.mapToUser(userDto)).thenReturn(user);
+		when(orderResponseMapper.mapToOrder(orderRequestDto)).thenReturn(order);
 		doNothing().when(orderRepository).save(order);
 
-		orderService.add(orderDto);
+		// when
+		orderService.save(orderRequestDto);
 
-		verify(orderMapper).mapToOrder(orderDto);
-		verify(orderRepository).save(order);
+		// then
+		verify(userService).findById(USER_ID);
+		verify(userMapper).mapToUser(userDto);
+		verify(orderResponseMapper).mapToOrder(orderRequestDto);
 
-		assertEquals(order.getId(), orderDto.getId());
+		assertEquals(order.getId(), orderRequestDto.getId());
 	}
 
 	@Test
-	public void testAddWheOrderNull() {
-		assertThrows(NullPointerException.class, () -> orderService.add(null));
+	public void testSaveWheUserNotFoundException() {
+		// given
+		final ProductDto productDto = createProductDto();
+		final OrderRequestDto orderRequestDto = createOrderRequestDto(productDto);
+
+		when(userService.findById(USER_ID)).thenReturn(null);
+
+		// when and then
+		assertThrows(UserNotFoundException.class, () -> orderService.save(orderRequestDto));
+
+		verify(userService).findById(USER_ID);
 	}
 
 	@Test
 	public void testFindByIdWhenOrderExist() {
+		// given
 		final Product product = createProduct();
 		final Order order = createOrder(product);
 		final ProductDto productDto = createProductDto();
-		final OrderDto orderDto = createOrderDto(productDto);
+		final OrderResponseDto orderResponseDto = createOrderDto(productDto);
+
+		final UserDto userDto = createUserDto();
 
 		when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
-		when(orderMapper.mapToOrderDto(order)).thenReturn(orderDto);
+		when(orderMapper.mapToOrderDto(order)).thenReturn(orderResponseDto);
+		when(userService.findById(USER_ID)).thenReturn(userDto);
 
-		final OrderDto actualeOrderDto = orderService.findById(ORDER_ID);
+		// when
+		final OrderResponseDto actualeOrderResponseDto = orderService.findById(ORDER_ID);
 
+		// then
 		verify(orderRepository).findById(ORDER_ID);
 		verify(orderMapper).mapToOrderDto(order);
-		assertEquals(actualeOrderDto.getId(), order.getId());
+		verify(userService).findById(USER_ID);
+		assertEquals(actualeOrderResponseDto.getId(), order.getId());
 	}
 
 	@Test
 	public void testFindByIdWhenOrderNotExist() {
+		// given
 		when(orderRepository.findById(PRODUCT_ID)).thenReturn(Optional.empty());
 
+		// when and then
 		assertThrows(OrderNotFoundException.class, () -> orderService.findById(PRODUCT_ID));
+
+		verify(orderRepository).findById(PRODUCT_ID);
 	}
 
 	@Test
 	public void testFindAllListNotEmpty() {
+		// given
 		final Product product = createProduct();
 		final Order firstOrder = createOrder(product);
 
@@ -117,73 +178,101 @@ public class OrderServiceTest {
 		secondOrder.setId(2);
 		final ProductDto productDto = createProductDto();
 
-		final OrderDto firstOrderDto = createOrderDto(productDto);
-		final OrderDto secondOrderDto = createOrderDto(productDto);
+		final OrderResponseDto firstOrderResponseDto = createOrderDto(productDto);
+		final OrderResponseDto secondOrderResponseDto = createOrderDto(productDto);
 		List<Order> orderList = new ArrayList<>();
 		orderList.add(firstOrder);
 		orderList.add(secondOrder);
 
 		when(orderRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(orderList));
-		when(orderMapper.mapToOrderDto(firstOrder)).thenReturn(firstOrderDto);
-		when(orderMapper.mapToOrderDto(secondOrder)).thenReturn(secondOrderDto);
+		when(orderMapper.mapToOrderDto(firstOrder)).thenReturn(firstOrderResponseDto);
+		when(orderMapper.mapToOrderDto(secondOrder)).thenReturn(secondOrderResponseDto);
 
 		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
-		final Page<OrderDto> actualOrderDtoList = orderService.findAll(pageable);
 
+		// when
+		final Page<OrderResponseDto> actualOrderDtoList = orderService.findAll(pageable);
+
+		// then
 		verify(orderRepository).findAll(any(Pageable.class));
 		verify(orderMapper, times(1)).mapToOrderDto(firstOrder);
 		verify(orderMapper, times(1)).mapToOrderDto(secondOrder);
 
 		assertFalse(actualOrderDtoList.isEmpty());
 		assertEquals(2, actualOrderDtoList.getSize());
-		assertTrue(actualOrderDtoList.getContent().contains(firstOrderDto));
-		assertTrue(actualOrderDtoList.getContent().contains(secondOrderDto));
+		assertTrue(actualOrderDtoList.getContent().contains(firstOrderResponseDto));
+		assertTrue(actualOrderDtoList.getContent().contains(secondOrderResponseDto));
 	}
 
 	@Test
 	public void testFindAllWhenOrdersNotExist() {
+		// given
 		final Pageable pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE);
 
 		when(orderRepository.findAll(any(Pageable.class))).thenReturn(Page.empty());
 
+		// when and then
 		assertThrows(OrderNotFoundException.class, () -> orderService.findAll(pageable));
+
+		verify(orderRepository).findAll(pageable);
 	}
 
 	@Test
 	public void testUpdateByIdWhenOrderExists() {
+		// given
 		final Product product = createProduct();
 		final Order order = createOrder(product);
 		order.setOrderStatus(OrderStatus.IN_PROGRESS);
 
+		final UserDto userDto = createUserDto();
+
 		final ProductDto productDto = createProductDto();
-		final OrderDto orderDto = createOrderDto(productDto);
-		orderDto.setOrderStatus(OrderStatus.IN_PROGRESS.getValue());
+
+		final OrderRequestDto orderRequestDto = createOrderRequestDto(productDto);
+		orderRequestDto.setOrderStatus(OrderStatus.IN_PROGRESS);
+
+		final OrderResponseDto orderResponseDto = createOrderDto(productDto);
+		orderResponseDto.setOrderStatus(OrderStatus.IN_PROGRESS.getValue());
 
 		when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
-		when(orderMapper.mapToOrderDto(any(Order.class))).thenReturn(orderDto);
-		when(orderMapper.mapToOrder(any(OrderDto.class))).thenReturn(order);
+		when(orderMapper.mapToOrder(any(OrderResponseDto.class))).thenReturn(order);
+		when(orderMapper.mapToOrderDto(any(Order.class))).thenReturn(orderResponseDto);
+		when(productService.findById(PRODUCT_ID)).thenReturn(productDto);
+		when(productMapper.mapToProduct(any(ProductDto.class))).thenReturn(product);
+		when(userService.findById(USER_ID)).thenReturn(userDto);
 		doNothing().when(orderRepository).update(any(Order.class));
 
-		orderService.update(orderDto);
+		// when
+		orderService.update(orderRequestDto);
 
+		// then
 		final ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(Order.class);
 
-		verify(orderRepository, times(1)).findById(order.getId());
-		verify(orderMapper, times(1)).mapToOrder(orderDto);
-		verify(orderRepository, times(1)).update(orderArgumentCaptor.capture());
-		final Order savedOrder = orderArgumentCaptor.getValue();
+		verify(orderRepository).findById(order.getId());
+		verify(orderMapper).mapToOrder(orderResponseDto);
+		verify(productService).findById(PRODUCT_ID);
+		verify(productMapper).mapToProduct(productDto);
+		verify(userService).findById(USER_ID);
+		verify(orderRepository).update(orderArgumentCaptor.capture());
 
+		final Order savedOrder = orderArgumentCaptor.getValue();
 		assertEquals(OrderStatus.IN_PROGRESS, savedOrder.getOrderStatus());
 	}
 
 	@Test
 	public void testUpdateByIdWhenOrderDoesNotExist() {
+		// given
 		final ProductDto productDto = createProductDto();
-		OrderDto orderDtoUpdate = createOrderDto(productDto);
-		when(orderRepository.findById(orderDtoUpdate.getId())).thenReturn(Optional.empty());
+		OrderResponseDto orderResponseDtoUpdate = createOrderDto(productDto);
 
-		assertThrows(OrderNotFoundException.class, () -> orderService.update(orderDtoUpdate));
-		verify(orderRepository, times(1)).findById(orderDtoUpdate.getId());
+		final OrderRequestDto orderRequestDto = createOrderRequestDto(productDto);
+
+		when(orderRepository.findById(orderResponseDtoUpdate.getId())).thenReturn(Optional.empty());
+
+		// when and then
+		assertThrows(OrderNotFoundException.class, () -> orderService.update(orderRequestDto));
+
+		verify(orderRepository, times(1)).findById(orderResponseDtoUpdate.getId());
 		verify(orderRepository, never()).update(any());
 	}
 
@@ -193,56 +282,73 @@ public class OrderServiceTest {
 		final Product product = createProduct();
 		final Order order = createOrder(product);
 
+		final UserDto userDto = createUserDto();
+
 		final ProductDto productDto = createProductDto();
-		final OrderDto orderDto = createOrderDto(productDto);
+		final OrderResponseDto orderResponseDto = createOrderDto(productDto);
 
 		when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
-		when(orderMapper.mapToOrderDto(order)).thenReturn(orderDto);
+		when(orderMapper.mapToOrderDto(order)).thenReturn(orderResponseDto);
+		when(userService.findById(USER_ID)).thenReturn(userDto);
 
 		orderService.deleteById(ORDER_ID);
 
 		verify(orderRepository).findById(ORDER_ID);
 		verify(orderMapper).mapToOrderDto(order);
+		verify(userService).findById(USER_ID);
 	}
 
 	@Test
 	public void deleteByIDWhenOrderNotExist() {
+		// given
 		when(orderRepository.findById(ORDER_ID)).thenThrow(OrderNotFoundException.class);
 
+		// when and then
 		assertThrows(OrderNotFoundException.class, () -> orderService.deleteById(ORDER_ID));
+
 		verify(orderRepository, never()).deleteById(PRODUCT_ID);
 	}
 
 	@Test
 	public void testFindProductsOrderIdWhenOrderExist() {
+		// given
 		final Product product = createProduct();
 		final Order order = createOrder(product);
 
+		final UserDto userDto = createUserDto();
+
 		final ProductDto productDto = createProductDto();
-		final OrderDto orderDto = createOrderDto(productDto);
+		final OrderResponseDto orderResponseDto = createOrderDto(productDto);
 		List<Product> productList = new ArrayList<>();
 		productList.add(product);
 
 		when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
-		when(orderMapper.mapToOrderDto(order)).thenReturn(orderDto);
+		when(orderMapper.mapToOrderDto(order)).thenReturn(orderResponseDto);
+		when(userService.findById(USER_ID)).thenReturn(userDto);
 		when(orderRepository.findProductsOrderId(ORDER_ID)).thenReturn(List.of(product));
 
+		// when
 		final List<Product> foundProductList = orderService.findProductsByOrderId(ORDER_ID);
 
+		// then
 		assertEquals(productList.size(), foundProductList.size());
 		assertEquals(productList, foundProductList);
 	}
 
 	@Test
 	public void testFindProductsOrderIdWhenOrderNotExist() {
+		// when and then
 		assertThrows(OrderNotFoundException.class, () -> orderService.findProductsByOrderId(ORDER_ID));
 	}
 
 	private Order createOrder(Product product) {
 		List<Product> products = new ArrayList<>();
 		products.add(product);
+		final User user = createUser();
 		Order order = new Order();
+
 		order.setId(ORDER_ID);
+		order.setUser(user);
 		order.setProducts(products);
 		order.setCreated(LocalDate.now().plusDays(10));
 		order.setOrderStatus(OrderStatus.NOT_READY);
@@ -250,16 +356,32 @@ public class OrderServiceTest {
 		return order;
 	}
 
-	private OrderDto createOrderDto(ProductDto productDto) {
+	private OrderRequestDto createOrderRequestDto(ProductDto productDto) {
+		List<Long> productsIds = new ArrayList<>();
+		productsIds.add(productDto.getId());
+
+		OrderRequestDto orderRequestDto = new OrderRequestDto();
+		orderRequestDto.setId(ORDER_ID);
+		orderRequestDto.setUserId(USER_ID);
+		orderRequestDto.setCreated("01-11-2024");
+		orderRequestDto.setProductIds(productsIds);
+		orderRequestDto.setOrderStatus(OrderStatus.IN_PROGRESS);
+
+		return orderRequestDto;
+	}
+
+	private OrderResponseDto createOrderDto(ProductDto productDto) {
 		List<ProductDto> productDtoList = new ArrayList<>();
 		productDtoList.add(productDto);
-		OrderDto orderDto = new OrderDto();
-		orderDto.setId(ORDER_ID);
-		orderDto.setCreated("01-01-2024");
-		orderDto.setProducts(productDtoList);
-		orderDto.setOrderStatus(OrderStatus.READY.getValue());
 
-		return orderDto;
+		OrderResponseDto orderResponseDto = new OrderResponseDto();
+		orderResponseDto.setId(ORDER_ID);
+		orderResponseDto.setUserId(USER_ID);
+		orderResponseDto.setCreated("01-01-2024");
+		orderResponseDto.setProducts(productDtoList);
+		orderResponseDto.setOrderStatus(OrderStatus.READY.getValue());
+
+		return orderResponseDto;
 	}
 
 	private Product createProduct() {
@@ -292,5 +414,25 @@ public class OrderServiceTest {
 		productDto.setReceived("01-01-2024");
 
 		return productDto;
+	}
+
+	private User createUser() {
+		User user = new User();
+		user.setId(USER_ID);
+		user.setName(USER_NAME);
+		user.setRole(ROLE_USER);
+		user.setPassword(PASSWORD);
+		user.setEmail(USER_EMAIL);
+
+		return user;
+	}
+
+	private UserDto createUserDto() {
+		UserDto userDto = new UserDto();
+		userDto.setId(USER_ID);
+		userDto.setName(USER_NAME);
+		userDto.setEmail(USER_EMAIL);
+
+		return userDto;
 	}
 }

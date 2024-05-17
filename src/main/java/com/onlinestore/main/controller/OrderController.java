@@ -1,6 +1,7 @@
 package com.onlinestore.main.controller;
 
-import com.onlinestore.main.domain.dto.OrderDto;
+import com.onlinestore.main.domain.dto.OrderResponseDto;
+import com.onlinestore.main.domain.dto.OrderRequestDto;
 import com.onlinestore.main.service.IOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,34 +29,34 @@ public class OrderController {
 	private final IOrderService orderService;
 
 	@PostMapping
-	public ResponseEntity<?> add(@RequestBody(required = false) @Valid OrderDto orderDto) {
-		if (orderDto == null) {
+	public ResponseEntity<?> save(@RequestBody(required = false) @Valid OrderRequestDto orderRequestDto) {
+		if (orderRequestDto == null) {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
-		orderService.add(orderDto);
+		orderService.save(orderRequestDto);
 
 		return new ResponseEntity<>("Order add", HttpStatus.CREATED);
 	}
 
 	@GetMapping("/id/{id}")
-	public ResponseEntity<OrderDto> findById(@PathVariable(value = "id") Long id) {
+	public ResponseEntity<OrderResponseDto> findById(@PathVariable(value = "id") Long id) {
 		return new ResponseEntity<>(orderService.findById(id), HttpStatus.OK);
 	}
 
 	@GetMapping("/{page}/{size}")
-	public ResponseEntity<List<OrderDto>> findAll(@PathVariable("page") int page, @PathVariable("size") int size) {
+	public ResponseEntity<List<OrderResponseDto>> findAll(@PathVariable("page") int page, @PathVariable("size") int size) {
 		final Pageable pageable = PageRequest.of(page, size);
-		Page<OrderDto> ordersPage = orderService.findAll(pageable);
+		Page<OrderResponseDto> ordersPage = orderService.findAll(pageable);
 
 		return new ResponseEntity<>(ordersPage.getContent(), HttpStatus.OK);
 	}
 
 	@PutMapping
-	public ResponseEntity<?> update(@RequestBody OrderDto orderDtoUpdate) {
-		orderService.update(orderDtoUpdate);
+	public ResponseEntity<?> update(@RequestBody OrderRequestDto orderRequestDto) {
+		orderService.update(orderRequestDto);
 
-		return new ResponseEntity<>(orderDtoUpdate, HttpStatus.OK);
+		return new ResponseEntity<>(orderRequestDto, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/{id}")
