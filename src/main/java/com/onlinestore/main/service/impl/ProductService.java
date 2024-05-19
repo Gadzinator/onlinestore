@@ -79,7 +79,8 @@ public class ProductService implements IProductService {
 
 	@Override
 	public Page<ProductDto> findAll(Pageable pageable) {
-		log.info("Starting finding all products:");
+		log.info("Starting finding all products: " + pageable);
+
 		Page<Product> productsPage = productRepository.findAll(pageable);
 		if (productsPage.isEmpty()) {
 			throw new ProductNotFoundException("Products were not found");
