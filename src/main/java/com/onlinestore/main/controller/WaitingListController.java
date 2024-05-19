@@ -28,7 +28,7 @@ public class WaitingListController {
 	public ResponseEntity<?> save(@PathVariable(value = "productId") Long productId, @PathVariable(value = "username") String username) {
 		waitingListService.save(productId, username);
 
-		return new ResponseEntity<>("WaitingList add", HttpStatus.CREATED);
+		return new ResponseEntity<>("WaitingList save", HttpStatus.CREATED);
 	}
 
 	@GetMapping({"/{id}"})

@@ -45,6 +45,6 @@ public class UserController {
 	public ResponseEntity<?> deleteById(@PathVariable(value = "id") Long id) {
 		userService.deleteById(id);
 
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		return new ResponseEntity<>("The user has been deleted", HttpStatus.NO_CONTENT);
 	}
 }

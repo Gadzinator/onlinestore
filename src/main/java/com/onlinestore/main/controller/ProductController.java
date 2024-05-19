@@ -84,6 +84,6 @@ public class ProductController {
 	public ResponseEntity<?> deleteByID(@PathVariable("id") Long id) {
 		productService.deleteByID(id);
 
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		return new ResponseEntity<>("The product has been removed", HttpStatus.NO_CONTENT);
 	}
 }

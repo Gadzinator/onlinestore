@@ -36,7 +36,7 @@ public class OrderController {
 
 		orderService.save(orderRequestDto);
 
-		return new ResponseEntity<>("Order add", HttpStatus.CREATED);
+		return new ResponseEntity<>("Order save", HttpStatus.CREATED);
 	}
 
 	@GetMapping("/id/{id}")
@@ -63,6 +63,6 @@ public class OrderController {
 	public ResponseEntity<?> deleteById(@PathVariable("id") Long id) {
 		orderService.deleteById(id);
 
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		return new ResponseEntity<>("The order has been deleted", HttpStatus.NO_CONTENT);
 	}
 }
