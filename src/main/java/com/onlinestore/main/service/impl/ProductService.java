@@ -2,6 +2,7 @@ package com.onlinestore.main.service.impl;
 
 import com.onlinestore.main.domain.dto.ProductDto;
 import com.onlinestore.main.domain.entity.Category;
+import com.onlinestore.main.domain.entity.Order;
 import com.onlinestore.main.domain.entity.Product;
 import com.onlinestore.main.domain.entity.WaitingList;
 import com.onlinestore.main.exception.ProductInUseException;
@@ -217,12 +218,12 @@ public class ProductService implements IProductService {
 	private void checkIfProductInOrder(Product product) {
 		log.info("Starting check if product in order: " + product);
 
-		final List<Product> productList = orderRepository.findProductsOrderId(product.getId());
-		if (!productList.isEmpty()) {
+		final List<Order> orderList = orderRepository.findOrdersByProductId(product.getId());
+		if (!orderList.isEmpty()) {
 
-			log.error("The product cannot be deleted it is used in order: " + productList);
+			log.error("The product cannot be deleted it is used in order: " + orderList);
 
-			throw new ProductInUseException("The product cannot be deleted it is used in order: " + productList);
+			throw new ProductInUseException("The product cannot be deleted it is used in order: " + orderList);
 		}
 
 		log.info("Finished check if product in order: " + product);

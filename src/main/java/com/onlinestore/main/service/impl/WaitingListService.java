@@ -69,6 +69,7 @@ public class WaitingListService implements IWaitingListService {
 	public WaitingLIstDto findById(long id) {
 		log.info("Starting finding waiting list by id: " + id);
 
+		final WaitingList byId = waitingListRepository.findById(id).get();
 		final WaitingList waitingList = waitingListRepository.findById(id).orElseThrow(
 				() -> new WaitingListNotFoundException("Waiting list not found by id: " + id));
 

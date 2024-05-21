@@ -31,7 +31,7 @@ public class WaitingListController {
 		return new ResponseEntity<>("WaitingList save", HttpStatus.CREATED);
 	}
 
-	@GetMapping({"/{id}"})
+	@GetMapping("/{id}")
 	public ResponseEntity<?> findById(@PathVariable(value = "id") Long id) {
 		final WaitingLIstDto waitingLIstDto = waitingListService.findById(id);
 
