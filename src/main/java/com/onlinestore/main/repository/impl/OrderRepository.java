@@ -21,15 +21,6 @@ public class OrderRepository extends AbstractDao<Order, Long> implements IOrderR
 	}
 
 	@Override
-	public List<Product> findProductsOrderId(long id) {
-		return entityManager.createQuery(
-						"SELECT p FROM Order o JOIN o.products p WHERE o.id = :orderId",
-						Product.class)
-				.setParameter("orderId", id)
-				.getResultList();
-	}
-
-	@Override
 	public List<Order> findOrdersByProductId(long productId) {
 		return entityManager.createQuery(
 						"SELECT o FROM Order o JOIN o.products p WHERE p.id = :productId",

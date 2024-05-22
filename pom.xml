@@ -19,8 +19,9 @@
         <org.liquibase.version>4.27.0</org.liquibase.version>
         <org.mockito.version>5.11.0</org.mockito.version>
         <org.junit.jupiter.version>5.8.2</org.junit.jupiter.version>
-        <org.springframework.security>6.2.4</org.springframework.security>
-        <log4j.version>1.2.17</log4j.version>
+        <org.springframework.security.version>6.2.4</org.springframework.security.version>
+        <org.apache.logging.log4j.version>2.19.0</org.apache.logging.log4j.version>
+        <org.springframework.data.version>3.3.0</org.springframework.data.version>
     </properties>
 
     <dependencies>
@@ -70,25 +71,25 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
-            <version>${org.springframework.security}</version>
+            <version>${org.springframework.security.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-web</artifactId>
-            <version>${org.springframework.security}</version>
+            <version>${org.springframework.security.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>${org.springframework.security}</version>
+            <version>${org.springframework.security.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
-            <version>${org.springframework.security}</version>
+            <version>${org.springframework.security.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -126,7 +127,6 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>2.2.224</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -203,13 +203,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-            <version>2.2.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
             <version>0.9.1</version>
@@ -218,18 +211,25 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.19.0</version>
+            <version>${org.apache.logging.log4j.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.19.0</version>
+            <version>${org.apache.logging.log4j.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
-            <version>3.2.0</version>
+            <version>${org.springframework.data.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+            <version>${org.springframework.data.version}</version>
         </dependency>
     </dependencies>
 

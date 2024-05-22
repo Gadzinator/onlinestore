@@ -123,15 +123,6 @@ public class OrderRepositoryTest {
 		assertFalse(deletedProductOptional.isPresent(), "Сущность не должна быть найдена после удаления");
 	}
 
-	@Test
-	public void testFindProductsOrderId() {
-		final Product product = createProduct();
-		final Order order = createOrder(product);
-		final List<Product> productList = orderRepository.findProductsOrderId(order.getId());
-
-		assertTrue(productList.isEmpty());
-	}
-
 	private Order createOrder(Product product) {
 		List<Product> products = new ArrayList<>();
 		products.add(product);

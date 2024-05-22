@@ -302,18 +302,20 @@ public class ProductServiceTest {
 		final ProductDto expectedProductDto = createProductDto();
 
 		when(waitingListRepository.findByProduct(product)).thenReturn(Optional.empty());
-		when(orderRepository.findProductsOrderId(PRODUCT_ID)).thenReturn(Collections.emptyList());
 		when(productRepository.findById(PRODUCT_ID)).thenReturn(Optional.of(product));
 		when(productMapper.mapToProductDto(product)).thenReturn(expectedProductDto);
+		when(waitingListRepository.findByProduct(product)).thenReturn(Optional.empty());
+		when(orderRepository.findOrdersByProductId(PRODUCT_ID)).thenReturn(Collections.emptyList());
 
 		// when
 		productService.deleteByID(PRODUCT_ID);
 
 		// then
 		verify(waitingListRepository).findByProduct(product);
-		verify(orderRepository).findProductsOrderId(PRODUCT_ID);
 		verify(productRepository).findById(PRODUCT_ID);
 		verify(productMapper).mapToProductDto(product);
+		verify(waitingListRepository).findByProduct(product);
+		verify(orderRepository).findOrdersByProductId(PRODUCT_ID);
 	}
 
 	@Test

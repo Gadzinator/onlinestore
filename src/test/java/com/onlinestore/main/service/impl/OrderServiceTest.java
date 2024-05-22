@@ -309,38 +309,6 @@ public class OrderServiceTest {
 		verify(orderRepository, never()).deleteById(PRODUCT_ID);
 	}
 
-	@Test
-	public void testFindProductsOrderIdWhenOrderExist() {
-		// given
-		final Product product = createProduct();
-		final Order order = createOrder(product);
-
-		final UserDto userDto = createUserDto();
-
-		final ProductDto productDto = createProductDto();
-		final OrderResponseDto orderResponseDto = createOrderDto(productDto);
-		List<Product> productList = new ArrayList<>();
-		productList.add(product);
-
-		when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(order));
-		when(orderMapper.mapToOrderDto(order)).thenReturn(orderResponseDto);
-		when(userService.findById(USER_ID)).thenReturn(userDto);
-		when(orderRepository.findProductsOrderId(ORDER_ID)).thenReturn(List.of(product));
-
-		// when
-		final List<Product> foundProductList = orderService.findProductsByOrderId(ORDER_ID);
-
-		// then
-		assertEquals(productList.size(), foundProductList.size());
-		assertEquals(productList, foundProductList);
-	}
-
-	@Test
-	public void testFindProductsOrderIdWhenOrderNotExist() {
-		// when and then
-		assertThrows(OrderNotFoundException.class, () -> orderService.findProductsByOrderId(ORDER_ID));
-	}
-
 	private Order createOrder(Product product) {
 		List<Product> products = new ArrayList<>();
 		products.add(product);
